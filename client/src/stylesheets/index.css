@@ -1,13 +1,611 @@
 body {
+  font-family: Arial, sans-serif;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  overflow-x: hidden;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Banner Styles */
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 10px;
+  border-bottom: 1px solid #000000;
+  z-index: 1000;
 }
+
+.app-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff4500; 
+  text-decoration: none;
+}
+
+.search-box {
+  width: 50%;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid lightgrey;
+  font-size: 16px;
+}
+
+.create-post-btn {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: gray; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.create-post-btn:hover {
+  background-color: #d93600; 
+}
+
+/* Navbar Styling */
+.nav-bar {
+  position: fixed;
+  top: 58px;
+  left: 0;
+  width: 190px;
+  height: calc(100vh - 58px);
+  background-color: #ffffff; 
+  padding: 15px;
+  border-right: 1px solid #000000;
+  overflow-y: auto;
+}
+
+.nav-link {
+  display: block;
+  padding: 10px;
+  font-size: 16px;
+  color: black;
+  background-color: lightgrey; 
+  text-decoration: none;
+  margin-bottom: 20px; 
+}
+
+.nav-link:hover{
+  background-color: #ff4500; 
+  color: white; 
+}
+
+.delimiter {
+  border: 0;
+  border-top: 1px solid black;
+  margin-bottom: 10px;
+}
+
+.create-community-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  background-color: gray;
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.create-community-btn:hover {
+  background-color: #ff4500; 
+}
+
+.create-community-btn:focus {
+  background-color: #d93600; 
+}
+
+.community-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.community-link {
+  display: block;
+  padding: 8px 0;
+  font-size: 14px;
+  color: black;
+  text-decoration: none;
+}
+
+.community-link:hover, .community-link:focus {
+  color: #ff4500; 
+}
+
+/* Home page styling */
+#home-page {
+margin-left: 220px; 
+margin-top: 78px; 
+padding: 20px;
+width: calc(100% - 240px);
+box-sizing: border-box;
+height: calc(100vh - 78px);
+overflow-y: hidden;
+display: flex;
+flex-direction: column;
+  
+}
+
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 10px 0;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 10px; 
+}
+
+.sort-buttons button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sort-buttons button:hover,
+.sort-buttons button.active {
+  background-color: #e0e0e0;
+}
+
+#post-count, #community-post-count {
+  margin: 10px 0;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid black;
+  margin: 10px 0;
+}
+
+#posts-container {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+}
+
+.post {
+  padding: 15px;
+  border-bottom: 1px dotted black;
+}
+
+.post-header {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.post-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-decoration: none;
+  color: black;
+}
+.post-title:hover {
+  text-decoration: underline;
+  color: gray;
+}
+
+.post-flair {
+  font-style: italic;
+  margin-bottom: 5px;
+  display: inline-block;
+  background-color: #f0f0f0;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.post-content {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.post-stats {
+  font-size: 12px;
+}
+
+/* Community Page styling */
+#community-page {
+margin-left: 220px; 
+margin-top: 78px; 
+padding: 20px;
+width: calc(100% - 240px);
+max-width: 1100px;
+box-sizing: border-box;
+height: calc(100vh - 78px);
+overflow-y: scroll;
+display: flex;
+flex-direction: column;
+}
+
+#community-header {
+margin-bottom: 20px;
+}
+
+#community-header-top {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+}
+#community-name {
+font-size: 24px;
+font-weight: bold;
+}
+
+#community-description {
+font-size: 16px;
+margin: 0 0 10px 0;
+}
+
+#community-age{
+font-size: 14px;
+color: #666;
+margin: 5px 0;
+}
+
+#sort-section {
+display: flex;
+justify-content: flex-end;
+margin-bottom: 15px;
+}
+
+#community-posts-container {
+flex-grow: 1;
+overflow-y: auto;
+padding-right: 15px;
+}
+
+.community-post {
+padding: 15px;
+border-bottom: 1px dotted black;
+}
+
+.community-post-header {
+font-size: 14px;
+margin-bottom: 5px;
+}
+
+/* Post Page Styles */
+#post-page {
+  margin-left: 220px;
+  margin-top: 78px;
+  padding: 20px;
+  width: calc(100% - 240px);
+  max-width: 1100px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-header {
+  margin-bottom: 20px;
+}
+
+.post-meta {
+  font-size: 14px;
+  color: #666;
+}
+
+.post-author {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.post-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+post-view-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-decoration: none;
+  color: black;
+}
+
+.post-flair {
+  font-style: italic;
+  margin-bottom: 10px;
+  display: inline-block;
+  background-color: #f0f0f0;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.post-content {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.post-stats {
+  font-size: 14px;
+  color: #666;
+}
+
+.separator {
+  margin: 0 5px;
+}
+
+.add-comment-btn {
+  padding: 8px 16px;
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.add-comment-btn:hover {
+  background-color: #e63900;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid black;
+  margin: 20px 0;
+}
+
+.comments-section {
+  margin-top: 20px;
+}
+
+/* Search Results Page styling */
+#search-results-page {
+margin-left: 220px; 
+margin-top: 78px; 
+padding: 20px;
+width: calc(100% - 240px);
+max-width: 1100px;
+box-sizing: border-box;
+height: calc(100vh - 78px);
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+}
+
+#search-results-header-section {
+margin-bottom: 20px;
+}
+
+#search-results-header-top {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+}
+
+#search-results-header {
+font-size: 28px;
+font-weight: bold;
+margin: 0;
+}
+
+#search-results-count {
+font-size: 14px;
+color: #666;
+margin: 5px 0;
+}
+
+#search-sort-section {
+display: flex;
+justify-content: flex-end;
+}
+
+#search-results-container {
+flex-grow: 1;
+overflow-y: auto;
+padding-right: 15px;
+}
+
+.search-result-post {
+padding: 15px;
+border-bottom: 1px dotted black;
+}
+
+/* New Post Page Styles */
+#new-post-page {
+margin-left: 220px;
+margin-top: 78px;
+padding: 20px;
+width: calc(100% - 240px);
+max-width: 800px;
+box-sizing: border-box;
+}
+
+#new-post-form {
+display: flex;
+flex-direction: column;
+gap: 20px;
+}
+
+.form-group {
+display: flex;
+flex-direction: column;
+gap: 5px;
+}
+
+.form-group label {
+font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+padding: 8px;
+border: 1px solid #ccc;
+border-radius: 4px;
+font-size: 16px;
+}
+
+.form-group textarea {
+min-height: 150px;
+resize: vertical;
+}
+
+.error {
+color: red;
+font-size: 14px;
+}
+
+#new-post-form button[type="submit"] {
+padding: 10px 20px;
+background-color: #ff4500;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-size: 16px;
+align-self: flex-start;
+}
+
+#new-post-form button[type="submit"]:hover {
+background-color: #e63900;
+}
+
+
+
+/* New Community Page Styling */
+#new-community-page {
+  margin-left: 220px; 
+  margin-top: 78px; 
+  padding: 20px; 
+  width: calc(100% - 220px); 
+  max-width:1250px ; 
+  box-sizing: border-box; 
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto; 
+}
+
+#new-community-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#new-community-form label {
+  font-weight: bold;
+}
+#new-community-form input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+#new-community-form button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+#new-community-form button[type="submit"]:hover {
+  background-color: #e63900;
+}
+#new-community-description {
+  min-height: 100px;
+  resize: vertical;
+}
+#new-commmunity-name {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+#new-community-form label {
+  font-weight: bold;
+}
+
+#new-comment-page {
+  margin-left: 220px; /* Align with other pages */
+  margin-top: 78px; /* Align with other pages */
+  padding: 20px;
+  width: calc(100% - 240px);
+  max-width: 800px; /* Set a maximum width for better layout */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+#new-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between form elements */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Space between label and input */
+}
+
+.form-group label {
+  font-weight: bold; /* Make label text bold */
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 8px; /* Space inside the input */
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 16px; /* Font size for input */
+}
+
+.form-group textarea {
+  min-height: 100px; /* Minimum height for the textarea */
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.error {
+  color: red; /* Color for error messages */
+  font-size: 14px; /* Font size for error messages */
+}
+
+#new-comment-form button[type="submit"] {
+  padding: 10px 20px; /* Space inside the button */
+  background-color: #ff4500; /* Button background color */
+  color: white; /* Button text color */
+  border: none; /* No border */
+  border-radius: 4px; /* Rounded corners for button */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size for button */
+}
+
+#new-comment-form button[type="submit"]:hover {
+  background-color: #e63900; /* Darker color on hover */
+}
+
