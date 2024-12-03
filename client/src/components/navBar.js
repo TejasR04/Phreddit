@@ -1,32 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const Banner = ({ onSearch, onCreatePost, onHomeClick }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      onSearch(searchQuery);
-    }
-  };
-
+const NavBar = ({ communities, onCommunityClick, onHomeClick, onCreateCommunity }) => {
   return (
-    <div className="banner">
-      <a href="#" className="app-name" onClick={onHomeClick}>
-        Phreddit
+    <div className="nav-bar">
+      <a href="#" className="nav-link" onClick={onHomeClick}>
+        Home
       </a>
-      <input
-        type="text"
-        className="search-box"
-        placeholder="Search Phreddit..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onKeyDown={handleSearch}
-      />
-      <button className="create-post-btn" onClick={onCreatePost}>
-        Create Post
+      <hr className="delimiter" />
+      <button className="create-community-btn" onClick={onCreateCommunity}>
+        Create Community
       </button>
+      <div className="community-header">Communities</div>
+      <div className="community-list">
+        {communities.map((community) => (
+          <a
+            href="#"
+            key={community.communityID}
+            className="community-link"
+            onClick={() => onCommunityClick(community.name)}
+          >
+            {community.name}
+          </a>
+        ))}
+      </div>
     </div>
   );
 };
 
-export default Banner;
+export default NavBar;

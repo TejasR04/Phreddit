@@ -1,220 +1,257 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+// /* server/init.JSON
+// ** You must write a script that will create documents in your database according
+// ** to the datamodel you have defined for the application.  Remember that you 
+// ** must at least initialize an admin user account whose credentials are derived
+// ** from command-line arguments passed to this script. But, you should also add
+// ** some communities, posts, comments, and link-flairs to fill your application
+// ** some initial content.  You can use the initializeDB.js script as inspiration, 
+// ** but you cannot just copy and paste it--you script has to do more to handle
+// ** users.
+// */
 
-// Import models
-const UserModel = require("./models/users");
-const CommunityModel = require("./models/communities");
-const PostModel = require("./models/posts");
-const CommentModel = require("./models/comments");
-const LinkFlairModel = require("./models/linkflairs");
 
-// Check MongoDB URL argument
-let userArgs = process.argv.slice(2);
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const User = require('./models/users');
+const Post = require('./models/posts');
+const Community = require('./models/communities'); // Import the Community model
+const Comment = require('./models/comments'); // Import the Comment model
+const LinkFlair = require('./models/linkflairs'); // Import the LinkFlair model
 
-if (userArgs.length < 4) {
-  console.log(
-    "ERROR: You need to specify 4 arguments in this order: " +
-      "1. MongoDB URL, 2. Admin Email, 3. Admin Display Name, 4. Admin Password"
-  );
-  process.exit(1);
-}
+// MongoDB Connection
+mongoose
+  .connect('mongodb://127.0.0.1:27017/phreddit', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(async () => {
+    console.log('Connected to MongoDB');
 
-if (!userArgs[0] || !userArgs[0].startsWith("mongodb")) {
-  console.log("ERROR: First argument must be a valid mongodb URL");
-  process.exit(1);
-}
+    try {
+      // Clear existing data
+      await User.deleteMany();
+      await Post.deleteMany();
+      await Community.deleteMany();
 
-let mongoDB = userArgs[0];
-const adminEmail = userArgs[1];
-const adminDisplayName = userArgs[2];
-const adminPassword = userArgs[3];
+      console.log('Cleared existing data.');
 
-mongoose.connect(mongoDB);
-let db = mongoose.connection;
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
+      // Create Admin User
+      const adminPassword = process.argv[2];
+      if (!adminPassword) {
+        console.error('Please provide an admin password as a command-line argument');
+        process.exit(1);
+      }
 
-// Helper function to create users
-async function createUser(userObj) {
-  const newUserDoc = new UserModel({
-    firstName: userObj.firstName,
-    lastName: userObj.lastName,
-    email: userObj.email,
-    password: userObj.password,
-    displayName: userObj.displayName,
-    reputation: userObj.reputation || 100,
-  });
-  return newUserDoc.save();
-}
+      const adminUser = new User({
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@phreddit.com',
+        displayName: 'Admin',
+        password: await bcrypt.hash(adminPassword, 10),
+        reputation: 1000,
+        createdDate: new Date('September 1, 2004 12:00:00'),
+        postIDs: [],
+        commentIDs: [],
+        communityIDs: [],
+      });
 
-// Helper function to create link flairs
-async function createLinkFlair(linkFlairObj) {
-  const newLinkFlairDoc = new LinkFlairModel({
-    content: linkFlairObj.content,
-  });
-  return newLinkFlairDoc.save();
-}
+      await adminUser.save();
+      console.log('Admin user created successfully.');
 
-// Helper function to create comments
-async function createComment(commentObj) {
-  const newCommentDoc = new CommentModel({
-    content: commentObj.content,
-    commentedBy: commentObj.commentedBy,
-    commentedDate: commentObj.commentedDate || new Date(),
-    upvotes: commentObj.upvotes || 0,
-    commentIDs: commentObj.commentIDs || [],
-  });
-  return newCommentDoc.save();
-}
+      // Create Mock Users
+      const user1 = new User({
+        firstName: 'LeBron',
+        lastName: 'The Viking',
+        email: 'rollo@phreddit.com',
+        password: await bcrypt.hash('password', 10),
+        createdDate: new Date('August 23, 2024 08:00:00'),
+        reputation: 100,
+        displayName: 'rollo',
+        postIDs: [],
+        commentIDs: [],
+        communityIDs: [],
+      });
 
-// Helper function to create posts
-async function createPost(postObj) {
-  const newPostDoc = new PostModel({
-    title: postObj.title,
-    content: postObj.content,
-    postedBy: postObj.postedBy,
-    postedDate: postObj.postedDate || new Date(),
-    views: postObj.views || 0,
-    upvotes: postObj.upvotes || 0,
-    linkFlairID: postObj.linkFlairID || [],
-    commentIDs: postObj.commentIDs || [],
-  });
-  return newPostDoc.save();
-}
+      const user2 = new User({
+        firstName: 'Shemp',
+        lastName: 'The Wise',
+        email: 'user2@phreddit.com',
+        password: await bcrypt.hash('password', 10),
+        createdDate: new Date('August 23, 2024 08:00:00'),
+        reputation: 100,
+        displayName: 'shemp',
+        postIDs: [],
+        commentIDs: [],
+        communityIDs: [],
+      });
 
-// Helper function to create communities
-async function createCommunity(communityObj) {
-  const newCommunityDoc = new CommunityModel({
-    name: communityObj.name,
-    description: communityObj.description,
-    startDate: communityObj.startDate || new Date(),
-    members: communityObj.members || [],
-    creator: communityObj.creator,
-    postIDs: communityObj.postIDs || [],
-  });
-  return newCommunityDoc.save();
-}
+      await Promise.all([user1.save(), user2.save()]);
+      console.log('Mock users created.');
 
-// Main initialization function
-async function initializeDB() {
-  try {
-    // Create Admin User
-    const adminUser = await createUser({
-      firstName: "Admin",
-      lastName: "User",
-      email: adminEmail,
-      password: adminPassword,
-      displayName: adminDisplayName,
-      reputation: 1000,
-    });
-    // Create Users
-    const user1 = await createUser({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      password: "securePassword123",
-      displayName: "JohnnyD",
-      reputation: 150,
-    });
+      // Create Mock Communities
+      const community1 = new Community({
+        name: 'p/all',
+        description: 'A community for general discussions.',
+        creator: ' ',
+        members: [], // Pre-populate members
+        postIDs: [], // Pre-populate posts
+        startDate: new Date('August 10, 2014 04:18:00'),
+      });
 
-    const user2 = await createUser({
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane.smith@example.com",
-      password: "anotherSecurePass456",
-      displayName: "JaneS",
-      reputation: 120,
-    });
+      const community2 = new Community({
+        name: 'p/technology',
+        description: 'A community for tech nerds.',
+        creator: ' ',
+        members: [], // Pre-populate members
+        postIDs: [], // Pre-populate posts
+        startDate: new Date('May 4, 2017 08:32:00'),
+      });
 
-    // Create Link Flairs
-    const linkFlair1 = await createLinkFlair({
-      content: "Discussion",
-    });
+      const community3 = new Community({
+        name: 'p/JavaScript',
+        description: 'A place to discuss JavaScript.',
+        creator: ' ',
+        members: [],
+        postIDs: [],
+        startDate: new Date('June 15, 2019 10:00:00'),
+      });
 
-    const linkFlair2 = await createLinkFlair({
-      content: "Humor",
-    });
+      await Promise.all([community1.save(), community2.save(), community3.save()]);
+      console.log('Mock communities created.');
 
-    // Create Comments
-    const comment1 = await createComment({
-      content: "Great post! Really enjoyed reading this.",
-      commentedBy: user1.displayName,
-      upvotes: 5,
-    });
+      // Create Mock Posts
+      const post1 = new Post({
+        title: 'AITJ for parking my Cybertruck?',
+        content: 'I parked my Cybertruck in a handicapped spot to protect it. Am I the jerk?',
+        postedBy: '',
+        postedDate: new Date('August 23, 2024 01:19:00'),
+        views: 14,
+        linkFlairID: [], // No link flair
+        commentIDs: [], // Pre-populate comments
+        upvotes: 5,
+      });
 
-    const comment2 = await createComment({
-      content: "Interesting perspective, thanks for sharing.",
-      commentedBy: user2.displayName,
-      upvotes: 3,
-    });
+      const post2 = new Post({
+        title: 'Remember when History Channel showed history?',
+        content:
+          'Does anyone else remember when History Channel actually showed history instead of alien shows?',
+        postedBy: '',
+        postedDate: new Date('September 9, 2024 14:24:00'),
+        views: 1030,
+        linkFlairID: [], 
+        commentIDs: [],
+        upvotes: 0,
+      });
 
-    // Create Posts
-    const post1 = await createPost({
-      title: "My First Community Post",
-      content: "Hello everyone, this is my first post in the community!",
-      postedBy: user1.displayName,
-      views: 100,
-      upvotes: 10,
-      linkFlairID: [linkFlair1._id],
-      commentIDs: [comment1._id],
-    });
+      const post3 = new Post({
+        title: 'React Hooks vs. Class Components',
+        content: 'Which one do you prefer and why?',
+        postedBy: '',
+        postedDate: new Date('June 20, 2024 09:00:00'),
+        views: 400,
+        linkFlairID: [],
+        commentIDs: [],
+        upvotes: 20,
+      });
 
-    const post2 = await createPost({
-      title: "Thoughts on Our Community",
-      content: "I wanted to share some reflections on our amazing community.",
-      postedBy: user2.displayName,
-      views: 75,
-      upvotes: 8,
-      linkFlairID: [linkFlair2._id],
-      commentIDs: [comment2._id],
-    });
+      const post4 = new Post({
+        title: 'AI Generated Art',
+        content: 'Check out this AI-generated art piece. What do you think?',
+        postedBy: '',
+        postedDate: new Date('June 25, 2024 10:00:00'),
+        views: 200,
+        linkFlairID: [],
+        commentIDs: [],
+        upvotes: 12,
+      });
 
-    // Create Communities
-    const community1 = await createCommunity({
-      name: "Tech Enthusiasts",
-      description: "A community for technology lovers and innovators",
-      members: [user1.displayName, user2.displayName],
-      creator: user1.displayName,
-      postIDs: [post1._id, post2._id],
-    });
+      await Promise.all([post1.save(), post2.save(), post3.save(), post4.save()]);
+      console.log('Mock posts created.');
 
-    const community2 = await createCommunity({
-      name: "Book Lovers",
-      description: "Share and discuss your favorite books",
-      members: [user2.displayName],
-      creator: user2.displayName,
-    });
+      //Make comments
+        const comment1 = new Comment({
+            content: 'There is no higher calling than the protection of Tesla products. God bless you sir and God bless Elon Musk. Oh, NTJ.',
+            commentedBy: '',
+            commentedDate: new Date('August 23, 2024 08:22:00'),
+            commentIDs: [],
+            upvotes: 3,
+        });
+        const comment2 = new Comment({
+            content: 'Obvious rage bait, but if not, then you are absolutely the jerk in this situation. Please delete your Tron vehicle and leave us in peace. YTJ.',
+            commentedBy: '',
+            commentedDate: new Date('August 23, 2024 10:57:00'),
+            commentIDs: [],
+            upvotes: 8,
+        });
+        await Promise.all([comment1.save(), comment2.save()]);
+        console.log('Mock comments created.');
 
-    // Update user documents with their created content
-    await UserModel.findByIdAndUpdate(user1._id, {
-      $push: {
-        postIDs: post1._id,
-        commentIDs: comment1._id,
-        communityIDs: community1._id,
-      },
-    });
+      //Push postIDs to user1 and user2
+        user1.postIDs.push(post1._id, post3._id);
+        user2.postIDs.push(post2._id, post4._id);
+        await Promise.all([user1.save(), user2.save()]);
+        console.log('Added postIDs to users.');
 
-    await UserModel.findByIdAndUpdate(user2._id, {
-      $push: {
-        postIDs: post2._id,
-        commentIDs: comment2._id,
-        communityIDs: [community1._id, community2._id],
-      },
-    });
+      //Push communityIDs to user1 and user2
+        adminUser.communityIDs.push(community1._id, community2._id, community3._id);
+        user1.communityIDs.push(community1._id, community3._id);
+        user2.communityIDs.push(community1._id, community2._id);
+        await Promise.all([user1.save(), user2.save()]);
+        console.log('Added communityIDs to users.');
+      //Push postIDs to community1 and community2
+        community1.postIDs.push(post1._id, post2._id);
+        community2.postIDs.push(post4._id);
+        community3.postIDs.push(post3._id);
+        await Promise.all([community1.save(), community2.save(), community3.save()]);
+        console.log('Added postIDs to communities.');  
+      //Push members to community 1, community 2, and community 3
+        community1.members.push(adminUser.displayName,user1.displayName, user2.displayName);
+        community2.members.push(adminUser.displayName,user2.displayName);
+        community3.members.push(adminUser.displayName,user1.displayName);
+        await Promise.all([community1.save(), community2.save(), community3.save()]);
+        console.log('Added members to communities.');
+      //Push creator to community1, community2, and community3
+        community1.creator = adminUser.displayName;
+        community2.creator = user2.displayName;
+        community3.creator = user1.displayName;
+        await Promise.all([community1.save(), community2.save(), community3.save()]);
+        console.log('Added creators to communities.');
 
-    console.log("Database initialized successfully");
-  } catch (error) {
-    console.error("Error initializing database:", error);
-  } finally {
-    if (db) {
-      await db.close();
+      //Push postedBy to posts
+        post1.postedBy = user1.displayName;
+        post2.postedBy = user2.displayName;
+        post3.postedBy = user1.displayName;
+        post4.postedBy = user2.displayName;
+        await Promise.all([post1.save(), post2.save(), post3.save(), post4.save()]);
+        console.log('Added postedBy to posts.');
+      //Push commentIDs to posts
+      post1.commentIDs.push(comment1._id);
+      comment1.commentIDs.push(comment2._id);
+      comment1.commentedBy = user2.displayName;
+      comment2.commentedBy = user1.displayName;
+        await Promise.all([post1.save(), comment1.save(), comment2.save()]);
+        console.log('Added commentIDs to posts.');
+
+
+        //Make link flairs
+        const linkFlair1 = new LinkFlair({
+            content: 'The jerkstore called...',
+        });
+        //Push link flair to post
+        post1.linkFlairID.push(linkFlair1._id);
+        await Promise.all([linkFlair1.save(), post1.save()]);
+        console.log('Added link flair to post.');
+        
+
+
+      console.log('Database initialized successfully.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error initializing database:', error);
+      process.exit(1);
     }
-  }
-}
-
-// Run the initialization
-initializeDB().catch((err) => {
-  console.error("Unexpected error:", err);
-  if (db) {
-    db.close();
-  }
-});
+  })
+  .catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
+    process.exit(1);
+  });

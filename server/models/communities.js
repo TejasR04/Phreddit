@@ -29,10 +29,11 @@ const communitySchema = new mongoose.Schema({
       required: true,
     },
   ],
-  creator: {
-    type: String,
-    required: true,
-  },
+  //Creator
+    creator: {
+        type: String,
+        required: true,
+    },
 });
 
 communitySchema.virtual("url").get(function () {
