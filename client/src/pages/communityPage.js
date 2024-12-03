@@ -139,7 +139,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
         </div>
         <p id="community-description">{community.description}</p>
         <p id="community-age">
-          Created {new Date(community.startDate).toLocaleDateString()}
+          Created: {community.creator} | {new Date(community.startDate).toLocaleDateString()}
         </p>
         <p>
           {posts.length} posts | {community.members.length} members
