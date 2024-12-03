@@ -142,7 +142,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
           Created {new Date(community.startDate).toLocaleDateString()}
         </p>
         <p>
-          {posts.length} posts | {community.memberCount} members
+          {posts.length} posts | {community.members.length} members
         </p>
         <hr className="divider" />
       </div>
