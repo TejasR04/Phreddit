@@ -29,6 +29,10 @@ const communitySchema = new mongoose.Schema({
       required: true,
     },
   ],
+  creator: {
+    type: String,
+    required: true,
+  },
 });
 
 communitySchema.virtual("url").get(function () {
