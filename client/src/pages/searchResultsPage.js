@@ -164,7 +164,7 @@ const SearchResultsPage = ({ query, onPostClick }) => {
                   : post.content}
               </div>
               <div className="post-stats">
-                {post.views} views | {getCommentCount(post._id)} comments
+                {post.upvotes} upvotes | {post.views} views | {getCommentCount(post._id)} comments
               </div>
             </div>
           ))

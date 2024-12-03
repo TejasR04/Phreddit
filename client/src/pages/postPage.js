@@ -114,6 +114,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
         )}
         <div className="post-content">{post.content}</div>
         <div className="post-stats">
+          <span>{post.upvotes} upvotes | </span>
           <span>{post.views} views</span>
           <span className="separator"> | </span>
           <span>{totalCommentCount} comments</span>
