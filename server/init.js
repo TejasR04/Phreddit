@@ -55,6 +55,12 @@ mongoose
         process.exit(1);
       }
 
+      //If there aren't 3 arguments, exit
+        if (process.argv.length != 5) {
+            console.error('Please provide an admin email, display name, and password.');
+            process.exit(1);
+        }
+
       const adminUser = new User({
         firstName: 'Admin',
         lastName: 'User',
