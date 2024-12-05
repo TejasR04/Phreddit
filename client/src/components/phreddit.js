@@ -8,10 +8,11 @@ import NewCommunityPage from "../pages/newCommunityPage";
 import NewPostPage from "../pages/newPostPage";
 import PostPage from "../pages/postPage";
 import SearchResultsPage from "../pages/searchResultsPage";
+import WelcomePage from "../pages/welcomePage.js";
 import { api } from "../services/api";
 
 const Phreddit = () => {
-  const [currentView, setCurrentView] = useState("home");
+  const [currentView, setCurrentView] = useState("welcome");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -85,6 +86,27 @@ const Phreddit = () => {
     setCurrentView("newComment");
   };
 
+  //When the user succesfully registers, they will be redirected to the home page
+  //When the user succesfully logs in, they will be redirected to the home page
+  const handleRegisterSubmit = async (userData) => {
+    try {
+      const response = await api.register(userData);
+      setCurrentView("home");
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  };
+
+  const handleLoginSubmit = async (loginData) => {
+    try {
+      const response = await api.login(loginData);
+      setCurrentView("home");
+    } catch (error) {
+      console.error("Error logging in user:", error);
+    }
+  };
+
+  const errorMessage = error ? "Error loading communities" : "";
   const renderView = () => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -134,6 +156,14 @@ const Phreddit = () => {
             api={api}
             query={searchQuery}
             onPostClick={handlePostClick}
+          />
+        );
+      case "welcome":
+        return (
+          <WelcomePage
+            handleRegisterSubmit={handleRegisterSubmit}
+            handleLoginSubmit={handleLoginSubmit}
+            errorMessage={errorMessage}
           />
         );
       default:

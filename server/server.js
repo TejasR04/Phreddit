@@ -28,6 +28,68 @@ app.get("/communities", async (req, res) => {
   }
 });
 
+// User Registration
+app.post("/register", async (req, res) => {
+    const { firstName, lastName, email, displayName, password, passwordVerification } = req.body;
+  
+    // Check if passwords match
+    if (password !== passwordVerification) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+  
+    try {
+      // Check if the email or display name already exists
+      const existingUser = await User.findOne({ $or: [{ email }, { displayName }] });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email or Display Name already exists" });
+      }
+      console.log('Password', password);
+  
+      // Create new user
+      const newUser = new User({
+        firstName,
+        lastName,
+        email,
+        displayName,
+        password,
+        reputation: 100,
+      });
+  
+      await newUser.save();
+      res.status(201).json({ message: "User registered successfully" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // User Login
+  app.post("/login", async (req, res) => {
+    console.log(req.body);
+    const { email, password } = req.body;
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Compare passwords
+      const isMatch = await bcrypt.compare(password, user.password);
+console.log('Entered password:', password);
+console.log('Hashed password from DB:',' '+ user.password);
+console.log('Passwords match:', isMatch); 
+
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid password" });
+      }
+  
+      res.status(200).json({ message: "Login successful", userId: user._id });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+
 app.post("/communities", async (req, res) => {
   const community = new Community({
     name: req.body.name,

@@ -34,19 +34,38 @@ mongoose
       await Community.deleteMany();
 
       console.log('Cleared existing data.');
+      //Admin email
+      const adminEmail = process.argv[2];
+        if (!adminEmail) {
+            console.error('Please provide an admin email as a command-line argument');
+            process.exit(1);
+        }
 
-      // Create Admin User
-      const adminPassword = process.argv[2];
+      //Admin display name
+      const adminDisplayName = process.argv[3];
+        if (!adminDisplayName) {
+            console.error('Please provide an admin display name as a command-line argument');
+            process.exit(1);
+        }
+
+      // Admin password
+      const adminPassword = process.argv[4];
       if (!adminPassword) {
         console.error('Please provide an admin password as a command-line argument');
         process.exit(1);
       }
 
+      //If there aren't 3 arguments, exit
+        if (process.argv.length != 5) {
+            console.error('Please provide an admin email, display name, and password.');
+            process.exit(1);
+        }
+
       const adminUser = new User({
         firstName: 'Admin',
         lastName: 'User',
-        email: 'admin@phreddit.com',
-        displayName: 'Admin',
+        email: adminEmail,
+        displayName: adminDisplayName,
         password: await bcrypt.hash(adminPassword, 10),
         reputation: 1000,
         createdDate: new Date('September 1, 2004 12:00:00'),

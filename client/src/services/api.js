@@ -82,4 +82,14 @@ export const api = {
     const response = await axios.get(`${API_BASE_URL}/search?q=${query}`);
     return response.data;
   },
+
+  register: async (userData) => {
+    const response = await axios.post(`${API_BASE_URL}/register`, userData);
+    return response.data;
+  },
+
+  login: async (loginData) => {
+    const response = await axios.post(`${API_BASE_URL}/login`, loginData);
+    return response.data;
+  },
 };
