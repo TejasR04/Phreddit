@@ -86,12 +86,10 @@ const Phreddit = () => {
     setCurrentView("newComment");
   };
 
-  //When the user succesfully registers, they will be redirected to the home page
-  //When the user succesfully logs in, they will be redirected to the home page
   const handleRegisterSubmit = async (userData) => {
     try {
       const response = await api.register(userData);
-      setCurrentView("home");
+      setCurrentView("welcome");
     } catch (error) {
       console.error("Error registering user:", error);
     }
@@ -164,6 +162,7 @@ const Phreddit = () => {
             handleRegisterSubmit={handleRegisterSubmit}
             handleLoginSubmit={handleLoginSubmit}
             errorMessage={errorMessage}
+            setCurrentView={setCurrentView}
           />
         );
       default:

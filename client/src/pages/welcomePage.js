@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api"; // Import the api helper
 
-const WelcomePage = () => {
+const WelcomePage = ({ setCurrentView }) => {
   const [formType, setFormType] = useState("welcome");
   const [userData, setUserData] = useState({
     firstName: "",
@@ -49,7 +49,7 @@ const WelcomePage = () => {
         password: userData.password,
         passwordVerification: userData.passwordVerification,
       });
-      navigate(`/welcome`);
+      setCurrentView("welcome");
     } catch (error) {
       setErrorMessage("Error registering user. Please try again.");
     }
@@ -63,7 +63,7 @@ const WelcomePage = () => {
         email: loginData.email,
         password: loginData.password,
       });
-      navigate(`/home`);
+      setCurrentView("home");
     } catch (error) {
       setErrorMessage("Invalid credentials. Please try again.");
       console.error("Login error:", error.response?.data || error);
