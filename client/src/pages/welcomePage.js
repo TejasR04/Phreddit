@@ -49,9 +49,9 @@ const WelcomePage = ({ setCurrentView }) => {
         password: userData.password,
         passwordVerification: userData.passwordVerification,
       });
-      setCurrentView("welcome");
+      setFormType("none");
     } catch (error) {
-      setErrorMessage("Error registering user. Please try again.");
+      setErrorMessage("Error registering user - email/username already in use.");
     }
   };
 
