@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
+import { useUser } from "../utils/userContext";
 
 const NewPostPage = ({ setCurrentView }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [username, setUsername] = useState("");
   const [communityID, setCommunityID] = useState("");
   const [linkFlair, setLinkFlair] = useState("");
   const [newLinkFlair, setNewLinkFlair] = useState("");
   const [communities, setCommunities] = useState([]);
   const [linkFlairs, setLinkFlairs] = useState([]);
   const [error, setError] = useState("");
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const fetchedCommunities = await api.getAllCommunities();
-        setCommunities(fetchedCommunities);
+        const allCommunities = await api.getAllCommunities();
+        const sortedCommunities = allCommunities.sort((a, b) => {
+          const userJoinedA = a.members.includes(user._id);
+          const userJoinedB = b.members.includes(user._id);
+          if (userJoinedA && !userJoinedB) return -1;
+          if (!userJoinedA && userJoinedB) return 1;
+          return 0;
+        });
+        setCommunities(sortedCommunities);
 
         const fetchedFlairs = await api.getAllLinkFlairs(); // Correct API call for link flairs
         setLinkFlairs(fetchedFlairs);
@@ -47,11 +55,6 @@ const NewPostPage = ({ setCurrentView }) => {
       return;
     }
 
-    if (!username.trim()) {
-      setError("Username is required.");
-      return;
-    }
-
     try {
       // Add new link flair if provided and not already existing
       let linkFlairID = linkFlair;
@@ -64,7 +67,7 @@ const NewPostPage = ({ setCurrentView }) => {
       const newPost = {
         title,
         content,
-        postedBy: username,
+        postedBy: user.displayName,
         communityId: communityID,
         linkFlairID: linkFlairID ? [linkFlairID] : [],
       };
@@ -74,7 +77,6 @@ const NewPostPage = ({ setCurrentView }) => {
       // Clear form fields after submission
       setTitle("");
       setContent("");
-      setUsername("");
       setCommunityID("");
       setLinkFlair("");
       setNewLinkFlair("");
@@ -86,6 +88,10 @@ const NewPostPage = ({ setCurrentView }) => {
       setError("Failed to create the post. Please try again.");
     }
   };
+
+  if (!user) {
+    return <div>You must be logged in to create a post.</div>;
+  }
 
   return (
     <div id="new-post-page">
@@ -155,12 +161,11 @@ const NewPostPage = ({ setCurrentView }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="username">Username (Required)</label>
+          <label htmlFor="creator">Creator </label>
           <input
             type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={user.displayName}
+            disabled
           />
         </div>
 
