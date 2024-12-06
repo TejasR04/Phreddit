@@ -29,7 +29,6 @@ const communitySchema = new mongoose.Schema({
       required: true,
     },
   ],
-  //Creator
     creator: {
         type: String,
         required: true,

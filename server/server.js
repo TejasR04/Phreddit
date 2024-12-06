@@ -103,8 +103,9 @@ app.post("/communities", async (req, res) => {
     name: req.body.name,
     description: req.body.description,
     members: req.body.members || [],
+    creator: req.body.creator,
   });
-
+  
   try {
     const newCommunity = await community.save();
     res.status(201).json(newCommunity);

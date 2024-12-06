@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useUser } from "../utils/userContext";
 
 const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,11 +52,6 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
       isValid = false;
     }
 
-    if (!formData.creator.trim()) {
-      newErrors.creator = "Creator username is required";
-      isValid = false;
-    }
-
     setErrors(newErrors);
     return isValid;
   };
@@ -64,15 +61,29 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
 
     if (!validateForm()) return;
 
+    const existingCommunities = await api.getAllCommunities();
+    const isDuplicateName = existingCommunities.some(
+      (community) =>
+        community.name.replace(/^p\//, '').toLowerCase() === formData.name.trim().toLowerCase()
+    );
+
+    if (isDuplicateName) {
+      setErrors((prev) => ({
+        ...prev,
+        name: "A community with this name already exists. Please choose a unique name.",
+      }));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const communityData = {
-        name: formData.name.trim(),
+        name: "p/" + formData.name.trim(),
         description: formData.description.trim(),
-        members: [formData.creator.trim()],
+        members: [String(user._id)],
+        creator: String(user.displayName),
       };
-
       const newCommunity = await api.createCommunity(communityData);
 
       const updatedCommunities = await api.getAllCommunities();
@@ -93,6 +104,10 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
     }
   };
 
+  if (!user) {
+    return <div>Please log in to create a community</div>;
+  }
+  
   return (
     <div id="new-community-page">
       <h1 className="text-2xl font-bold mb-6">Create a New Community</h1>
@@ -139,19 +154,13 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
 
         <div className="form-group">
           <label htmlFor="creator">
-            Creator Username <span className="text-red-500">*</span>
+            Creator <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="creator"
-            name="creator"
-            value={formData.creator}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
+            value={user.displayName}
+            disabled
           />
-          {errors.creator && (
-            <div className="error">{errors.creator}</div>
-          )}
         </div>
 
         {errors.submit && (
