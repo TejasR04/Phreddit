@@ -1,13 +1,15 @@
 import React from 'react';
+import { useUser } from "../utils/userContext";
 
 const NavBar = ({ communities, onCommunityClick, onHomeClick, onCreateCommunity }) => {
+  const { user, logoutUser } = useUser();
   return (
     <div className="nav-bar">
       <a href="#" className="nav-link" onClick={onHomeClick}>
         Home
       </a>
       <hr className="delimiter" />
-      <button className="create-community-btn" onClick={onCreateCommunity}>
+      <button className="create-community-btn" onClick={onCreateCommunity} disabled={!user}>
         Create Community
       </button>
       <div className="community-header">Communities</div>

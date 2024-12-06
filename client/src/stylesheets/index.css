@@ -49,14 +49,12 @@ body {
   background-color: #d93600; 
 }
 
-.create-post-btn.disabled {
-  background-color: #ccc; /* Grey background for the disabled state */
-  cursor: not-allowed; /* Change cursor to indicate it's not clickable */
+.create-post-btn:disabled {
+  background-color: #ccc; 
+  cursor: not-allowed; 
+  opacity: 0.5;
 }
 
-.create-post-btn:disabled {
-  opacity: 0.5; /* Slightly reduce opacity for better disabled visual */
-}
 
 .logout-btn, .profile-btn {
   margin-left: 10px;
@@ -139,11 +137,13 @@ body {
 }
 
 .create-community-btn:hover {
-  background-color: #ff4500; 
+  background-color: #d93600; 
 }
 
-.create-community-btn:focus {
-  background-color: #d93600; 
+.create-community-btn:disabled {
+  background-color: #ccc; 
+  cursor: not-allowed; 
+  opacity:0.5;
 }
 
 .community-header {
