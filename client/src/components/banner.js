@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-
-const Banner = ({ onSearch, onCreatePost, onHomeClick }) => {
+import { useUser } from '../utils/userContext';
+const Banner = ({ onSearch, onCreatePost, onWelcomeClick }) => {
+  const { user, logoutUser } = useUser(); // Get the current user and the logout function
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e) => {
@@ -9,11 +10,23 @@ const Banner = ({ onSearch, onCreatePost, onHomeClick }) => {
     }
   };
 
+  const handleCreatePost = () => {
+    // Disable create post if user is a guest
+    if (!user) return;
+    onCreatePost();
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    onWelcomeClick();
+  }
+
   return (
     <div className="banner">
-      <a href="#" className="app-name" onClick={onHomeClick}>
+      <a href="#" className="app-name" onClick={onWelcomeClick}>
         Phreddit
       </a>
+      
       <input
         type="text"
         className="search-box"
@@ -22,9 +35,27 @@ const Banner = ({ onSearch, onCreatePost, onHomeClick }) => {
         onChange={(e) => setSearchQuery(e.target.value)}
         onKeyDown={handleSearch}
       />
-      <button className="create-post-btn" onClick={onCreatePost}>
+      
+      {/* Create Post button */}
+      <button 
+        className={`create-post-btn ${!user ? 'disabled' : ''}`} 
+        onClick={handleCreatePost}
+        disabled={!user} // Disable the button if user is a guest
+      >
         Create Post
       </button>
+
+      {/* Profile button */}
+      <button className="profile-btn">
+        {user ? user.displayName : 'Guest'}
+      </button>
+
+      {/* Logout button, visible only if user is logged in */}
+      {user && (
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      )}
     </div>
   );
 };
