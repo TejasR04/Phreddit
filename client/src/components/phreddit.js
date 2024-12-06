@@ -62,6 +62,10 @@ const Phreddit = () => {
     setCurrentView("home");
   };
 
+  const handleWelcomeClick = () => {
+    setCurrentView("welcome");
+  };
+
   const handleCreateCommunity = () => {
     setCurrentView("newCommunity");
   };
@@ -175,7 +179,7 @@ const Phreddit = () => {
       <Banner
         onSearch={handleSearch}
         onCreatePost={handleCreatePost}
-        onHomeClick={handleHomeClick}
+        onWelcomeClick={handleWelcomeClick}
       />
       <NavBar
         communities={communities}

@@ -49,6 +49,48 @@ body {
   background-color: #d93600; 
 }
 
+.create-post-btn.disabled {
+  background-color: #ccc; /* Grey background for the disabled state */
+  cursor: not-allowed; /* Change cursor to indicate it's not clickable */
+}
+
+.create-post-btn:disabled {
+  opacity: 0.5; /* Slightly reduce opacity for better disabled visual */
+}
+
+.logout-btn, .profile-btn {
+  margin-left: 10px;
+}
+
+.profile-btn {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: gray; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.profile-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: gray; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #e53935;
+}
+
+
 /* Navbar Styling */
 .nav-bar {
   position: fixed;

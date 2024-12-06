@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { formatTimestamp } from "../utils/utils";
 import { api } from "../services/api";
+import { useUser } from "../utils/userContext";
 
 const HomePage = ({ onPostClick }) => {
   const [posts, setPosts] = useState([]);
@@ -9,6 +10,8 @@ const HomePage = ({ onPostClick }) => {
   const [linkFlairs, setLinkFlairs] = useState([]);
   const [sortOrder, setSortOrder] = useState("newest");
   const [loading, setLoading] = useState(true);
+  const { user } = useUser();
+
 
   useEffect(() => {
     const fetchData = async () => {

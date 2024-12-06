@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { api } from "../services/api"; // Import the api helper
+import { useUser } from "../utils/userContext"; // Import the user context
 
 const WelcomePage = ({ setCurrentView }) => {
   const [formType, setFormType] = useState("welcome");
@@ -17,7 +17,7 @@ const WelcomePage = ({ setCurrentView }) => {
     password: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate();
+  const {loginUser} = useUser();
 
   const handleInputChange = (e, dataType) => {
     const { name, value } = e.target;
@@ -63,6 +63,8 @@ const WelcomePage = ({ setCurrentView }) => {
         email: loginData.email,
         password: loginData.password,
       });
+      const user = response.user;
+      loginUser(user);
       setCurrentView("home");
     } catch (error) {
       setErrorMessage("Invalid credentials. Please try again.");
@@ -154,14 +156,13 @@ const WelcomePage = ({ setCurrentView }) => {
             <button type="submit">Login</button>
           </form>
         );
-      case "guest":
-        return (
-          <div>
-            <h2>Continue as Guest</h2>
-            <button onClick={() => navigate(`/guest-home`)}>Go to Guest Home</button>
-          </div>
-        );
-      default:
+        case "guest":
+            //If they click continue as guest, set the current view to home
+            //Set the login user to null
+            loginUser(null);
+            setCurrentView("home");
+
+        default:
         return null;
     }
   };

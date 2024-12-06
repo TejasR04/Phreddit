@@ -64,7 +64,6 @@ app.post("/register", async (req, res) => {
   
   // User Login
   app.post("/login", async (req, res) => {
-    console.log(req.body);
     const { email, password } = req.body;
   
     try {
@@ -75,19 +74,28 @@ app.post("/register", async (req, res) => {
   
       // Compare passwords
       const isMatch = await bcrypt.compare(password, user.password);
-console.log('Entered password:', password);
-console.log('Hashed password from DB:',' '+ user.password);
-console.log('Passwords match:', isMatch); 
-
+      console.log('Entered email:', user.email);
+      console.log('Entered password:', password);
+      console.log('Hashed password from DB:', user.password);
+      console.log('Passwords match:', isMatch);
+  
       if (!isMatch) {
         return res.status(400).json({ message: "Invalid password" });
       }
   
-      res.status(200).json({ message: "Login successful", userId: user._id });
+      // Return the full user object, excluding sensitive fields like password
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password; // Don't send the password to the client
+  
+      res.status(200).json({
+        message: "Login successful",
+        user: userWithoutPassword, // Send the full user object
+      });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   });
+  
 
 
 app.post("/communities", async (req, res) => {
