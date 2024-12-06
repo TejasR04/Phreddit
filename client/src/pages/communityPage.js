@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { formatTimestamp } from "../utils/utils";
 import { api } from "../services/api";
+import { useUser } from "../utils/userContext";
 
 const CommunityPage = ({ communityName, onPostClick }) => {
+  const { user } = useUser();
   const [community, setCommunity] = useState(null);
   const [posts, setPosts] = useState([]);
   const [commentCounts, setCommentCounts] = useState([]);
@@ -10,6 +12,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
   const [sortOrder, setSortOrder] = useState("newest");
   const [loading, setLoading] = useState(true);
   const [lastCommentDates, setLastCommentDates] = useState([]);
+  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -20,6 +23,14 @@ const CommunityPage = ({ communityName, onPostClick }) => {
           (c) => c.name === communityName
         );
         setCommunity(selectedCommunity);
+
+        if (user && selectedCommunity) {
+          setIsMember(
+            selectedCommunity.members.some(
+              (memberId) => memberId.toString() === user._id.toString()
+            )
+          );
+        }
 
         if (selectedCommunity) {
           const fetchedPosts = await api.getAllPosts();
@@ -77,6 +88,32 @@ const CommunityPage = ({ communityName, onPostClick }) => {
     fetchCommunityData();
   }, [communityName]);
 
+  const handleCommunityMembership = async () => {
+    if (!user) return;
+
+    try {
+      if (isMember) {
+        await api.leaveCommunity(community._id, user._id);
+        setIsMember(false);
+        setCommunity((prevCommunity) => ({
+          ...prevCommunity,
+          members: prevCommunity.members.filter(
+            (memberId) => memberId.toString() !== user._id.toString()
+          ),
+        }));
+      } else {
+        await api.joinCommunity(community._id, user._id);
+        setIsMember(true);
+        setCommunity((prevCommunity) => ({
+          ...prevCommunity,
+          members: [...prevCommunity.members, user._id],
+        }));
+      }
+    } catch (error) {
+      console.error("Error updating community membership:", error);
+    }
+  };
+
   const sortedPosts = () => {
     if (!posts || posts.length === 0) return [];
 
@@ -115,7 +152,25 @@ const CommunityPage = ({ communityName, onPostClick }) => {
     <div id="community-page">
       <div id="community-header">
         <div id="community-header-top">
-          <h1 id="community-name">{community.name}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h1 id="community-name">{community.name}</h1>
+            {user && (
+              <button
+                onClick={handleCommunityMembership}
+                className={isMember ? "leave-btn" : "join-btn"}
+                style={{
+                  backgroundColor: isMember ? "red" : "green",
+                  color: "white",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                {isMember ? "Leave Community" : "Join Community"}
+              </button>
+            )}
+          </div>
           <div className="sort-buttons">
             <button
               className={sortOrder === "newest" ? "active" : ""}
@@ -139,7 +194,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
         </div>
         <p id="community-description">{community.description}</p>
         <p id="community-age">
-          Created: {community.creator} | {new Date(community.startDate).toLocaleDateString()}
+          Created: {community.creator} | {" "} {new Date(community.startDate).toLocaleDateString()}
         </p>
         <p>
           {posts.length} posts | {community.members.length} members

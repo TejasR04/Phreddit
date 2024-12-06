@@ -310,6 +310,52 @@ app.post("/linkFlairs", async (req, res) => {
   }
 });
 
+app.post("/communities/:communityId/join", async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { userId } = req.body;
+
+    const community = await Community.findById(communityId);
+    const user = await User.findById(userId);
+
+    if (!community.members.includes(userId)) {
+      community.members.push(userId);
+      user.communityIDs.push(communityId);
+
+      await community.save();
+      await user.save();
+    }
+
+    res.status(200).json(community);
+  } catch (error) {
+    res.status(500).json({ message: "Error joining community", error });
+  }
+});
+
+app.post("/communities/:communityId/leave", async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { userId } = req.body;
+
+    const community = await Community.findById(communityId);
+    const user = await User.findById(userId);
+
+    community.members = community.members.filter(
+      (memberId) => memberId.toString() !== userId
+    );
+
+    user.communityIDs = user.communityIDs.filter(
+      (commId) => commId.toString() !== communityId
+    );
+
+    await community.save();
+    await user.save();
+
+    res.status(200).json(community);
+  } catch (error) {
+    res.status(500).json({ message: "Error leaving community", error });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
