@@ -66,7 +66,7 @@ mongoose
         lastName: 'User',
         email: adminEmail,
         displayName: adminDisplayName,
-        password: await bcrypt.hash(adminPassword, 10),
+        password: adminPassword,
         reputation: 1000,
         createdDate: new Date('September 1, 2004 12:00:00'),
         postIDs: [],
@@ -82,7 +82,7 @@ mongoose
         firstName: 'LeBron',
         lastName: 'The Viking',
         email: 'rollo@phreddit.com',
-        password: await bcrypt.hash('password', 10),
+        password: 'password', 
         createdDate: new Date('August 23, 2024 08:00:00'),
         reputation: 100,
         displayName: 'rollo',
@@ -95,7 +95,7 @@ mongoose
         firstName: 'Shemp',
         lastName: 'The Wise',
         email: 'user2@phreddit.com',
-        password: await bcrypt.hash('password', 10),
+        password:'password', 
         createdDate: new Date('August 23, 2024 08:00:00'),
         reputation: 100,
         displayName: 'shemp',
@@ -215,7 +215,7 @@ mongoose
         adminUser.communityIDs.push(community1._id, community2._id, community3._id);
         user1.communityIDs.push(community1._id, community3._id);
         user2.communityIDs.push(community1._id, community2._id);
-        await Promise.all([user1.save(), user2.save()]);
+        await Promise.all([user1.save(), user2.save(), adminUser.save()]);
         console.log('Added communityIDs to users.');
       //Push postIDs to community1 and community2
         community1.postIDs.push(post1._id, post2._id);
@@ -250,6 +250,11 @@ mongoose
       comment2.commentedBy = user1.displayName;
         await Promise.all([post1.save(), comment1.save(), comment2.save()]);
         console.log('Added commentIDs to posts.');
+
+      //Push commentIDs to user1 and user2
+        user1.commentIDs.push(comment2._id);
+        user2.commentIDs.push(comment1._id);
+        await Promise.all([user1.save(), user2.save()]);
 
 
         //Make link flairs
