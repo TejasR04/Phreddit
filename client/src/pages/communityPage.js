@@ -27,10 +27,10 @@ const CommunityPage = ({ communityName, onPostClick }) => {
         if (user && selectedCommunity) {
           setIsMember(
             selectedCommunity.members.some(
-              (memberId) => memberId.toString() === user._id.toString()
+              (member) => member === user.displayName
             )
           );
-        }
+        }        
 
         if (selectedCommunity) {
           const fetchedPosts = await api.getAllPosts();
@@ -93,20 +93,20 @@ const CommunityPage = ({ communityName, onPostClick }) => {
 
     try {
       if (isMember) {
-        await api.leaveCommunity(community._id, user._id);
+        await api.leaveCommunity(community._id, user.displayName);
         setIsMember(false);
         setCommunity((prevCommunity) => ({
           ...prevCommunity,
           members: prevCommunity.members.filter(
-            (memberId) => memberId.toString() !== user._id.toString()
+            (member) => member !== user.displayName
           ),
         }));
       } else {
-        await api.joinCommunity(community._id, user._id);
+        await api.joinCommunity(community._id, user.displayName);
         setIsMember(true);
         setCommunity((prevCommunity) => ({
           ...prevCommunity,
-          members: [...prevCommunity.members, user._id],
+          members: [...prevCommunity.members, user.displayName],
         }));
       }
     } catch (error) {
