@@ -10,6 +10,7 @@ import PostPage from "../pages/postPage";
 import SearchResultsPage from "../pages/searchResultsPage";
 import WelcomePage from "../pages/welcomePage.js";
 import { api } from "../services/api";
+import { useUser } from "../utils/userContext";
 
 const Phreddit = () => {
   const [currentView, setCurrentView] = useState("welcome");
@@ -20,12 +21,23 @@ const Phreddit = () => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
-        const data = await api.getAllCommunities();
-        setCommunities(data);
+        const allCommunities = await api.getAllCommunities();
+        const sortedCommunities = user
+          ? allCommunities.sort((a, b) => {
+              const userJoinedA = a.members.includes(user._id);
+              const userJoinedB = b.members.includes(user._id);
+              if (userJoinedA && !userJoinedB) return -1;
+              if (!userJoinedA && userJoinedB) return 1;
+              console.log("userJoinedA", userJoinedA);
+              return 0;
+            })
+          : allCommunities;
+        setCommunities(sortedCommunities);
       } catch (err) {
         setError("Failed to load communities");
         console.error("Error fetching communities:", err);
@@ -33,9 +45,8 @@ const Phreddit = () => {
         setLoading(false);
       }
     };
-
     fetchCommunities();
-  }, []);
+  }, [user, currentView]);
 
   useEffect(() => {
     const handleCommunityCreated = (event) => {
@@ -181,12 +192,14 @@ const Phreddit = () => {
         onCreatePost={handleCreatePost}
         onWelcomeClick={handleWelcomeClick}
       />
+      {currentView != "welcome" && (
       <NavBar
         communities={communities}
         onCommunityClick={handleCommunityClick}
         onHomeClick={handleHomeClick}
         onCreateCommunity={handleCreateCommunity}
       />
+      )}
       <main>{renderView()}</main>
     </div>
   );
