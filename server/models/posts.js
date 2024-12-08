@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema({
   views: { type: Number, required: true, default: 0 },
   linkFlairID: [{ type: mongoose.Schema.Types.ObjectId, ref: "LinkFlair" }],
   commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+  upvoteMembers: [{ type: String }],
   upvotes: { type: Number, required: true, default: 0 },
 });
 

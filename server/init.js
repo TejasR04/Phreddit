@@ -147,7 +147,8 @@ mongoose
         views: 14,
         linkFlairID: [], // No link flair
         commentIDs: [], // Pre-populate comments
-        upvotes: 5,
+        upvoteMembers: [], // Pre-populate upvotes
+        upvotes: 0,
       });
 
       const post2 = new Post({
@@ -159,6 +160,7 @@ mongoose
         views: 1030,
         linkFlairID: [], 
         commentIDs: [],
+        upvoteMembers: [],
         upvotes: 0,
       });
 
@@ -170,7 +172,8 @@ mongoose
         views: 400,
         linkFlairID: [],
         commentIDs: [],
-        upvotes: 20,
+        upvoteMembers: [],
+        upvotes: 0,
       });
 
       const post4 = new Post({
@@ -181,7 +184,8 @@ mongoose
         views: 200,
         linkFlairID: [],
         commentIDs: [],
-        upvotes: 12,
+        upvoteMembers: [],
+        upvotes: 0,
       });
 
       await Promise.all([post1.save(), post2.save(), post3.save(), post4.save()]);
@@ -193,14 +197,16 @@ mongoose
             commentedBy: '',
             commentedDate: new Date('August 23, 2024 08:22:00'),
             commentIDs: [],
-            upvotes: 3,
+            upvoteMembers: [],
+            upvotes: 0,
         });
         const comment2 = new Comment({
             content: 'Obvious rage bait, but if not, then you are absolutely the jerk in this situation. Please delete your Tron vehicle and leave us in peace. YTJ.',
             commentedBy: '',
             commentedDate: new Date('August 23, 2024 10:57:00'),
             commentIDs: [],
-            upvotes: 8,
+            upvoteMembers: [],
+            upvotes: 0,
         });
         await Promise.all([comment1.save(), comment2.save()]);
         console.log('Mock comments created.');

@@ -28,6 +28,11 @@ const commentSchema = new mongoose.Schema({
         required: true,
         default: 0,
     },
+    upvoteMembers: [
+        {
+            type: String,
+        },
+    ],
 });
 
 commentSchema.virtual("url").get(function () {
