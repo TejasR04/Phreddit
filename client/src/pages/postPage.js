@@ -18,12 +18,10 @@ const PostPage = ({ postID, handleReplyClick }) => {
         setLoading(true);
         setError(null);
 
-        // Fetch the post details and increment views
         const postDetails = await api.getPost(postID);
         await api.incrementViews(postID);
         setPost(postDetails);
 
-        // Fetch all communities and find the one associated with this post
         const allCommunities = await api.getAllCommunities();
         const associatedCommunity = allCommunities.find((community) =>
           community.postIDs.some((id) => id.toString() === postID)
@@ -33,12 +31,9 @@ const PostPage = ({ postID, handleReplyClick }) => {
           setCommunity(associatedCommunity);
         }
 
-        // Fetch the nested comments for the post
         const postComments = await api.getComments(postID);
         setComments(postComments);
-        console.log("Nested Comments: ", postComments);
 
-        // Calculate total comments including replies
         const countComments = (comments) => {
           return comments.reduce((count, comment) => {
             if (Array.isArray(comment.commentIDs) && comment.commentIDs.length > 0) {
@@ -48,8 +43,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
           }, 0);
         };
 
-        const totalComments = countComments(postComments);
-        setTotalCommentCount(totalComments);
+        setTotalCommentCount(countComments(postComments));
       } catch (err) {
         console.error("Error fetching post data:", err);
         setError("Failed to load post details. Please try again later.");
@@ -61,7 +55,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
     fetchPostData();
   }, [postID]);
 
-  const handleUpvote = async () => {
+  const handleUpvotePost = async () => {
     if (!user || user.reputation < 50) return;
     try {
       const updatedPost = await api.upvotePost(postID);
@@ -71,7 +65,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
     }
   };
 
-  const handleDownvote = async () => {
+  const handleDownvotePost = async () => {
     if (!user || user.reputation < 50) return;
     try {
       const updatedPost = await api.downvotePost(postID);
@@ -81,7 +75,25 @@ const PostPage = ({ postID, handleReplyClick }) => {
     }
   };
 
-  console.log("Frontend comments: ", comments); 
+  const handleUpvoteComment = async (commentID) => {
+    if (!user || user.reputation < 50) return;
+    try {
+      const updatedComments = await api.upvoteComment(commentID);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error("Error upvoting comment:", error);
+    }
+  };
+
+  const handleDownvoteComment = async (commentID) => {
+    if (!user || user.reputation < 50) return;
+    try {
+      const updatedComments = await api.downvoteComment(commentID);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error("Error downvoting comment:", error);
+    }
+  };
 
   const renderComments = (comments, indentLevel = 0) => {
     return comments.map((comment) => (
@@ -94,8 +106,36 @@ const PostPage = ({ postID, handleReplyClick }) => {
           {comment.commentedBy} | {formatTimestamp(new Date(comment.commentedDate))}
         </div>
         <div className="comment-content">{comment.content}</div>
-        <div className="comment-stats">{comment.upvotes} upvotes</div>
-        {console.log("Comment upvotes: ", comment.upvotes)}
+        <div className="comment-stats">
+          <span>{comment.upvotes} upvotes</span>
+          {user ? (
+            <div className="comment-vote-buttons">
+              <button
+                className={`vote-btn upvote ${user.reputation < 50 ? "disabled" : ""}`}
+                onClick={() => handleUpvoteComment(comment._id)}
+                disabled={user.reputation < 50}
+              >
+                Upvote
+              </button>
+              <button
+              className={`vote-btn downvote ${user.reputation < 50 ? "disabled" : ""}`}
+              onClick={handleDownvoteComment}
+              disabled={user.reputation < 50}
+            >
+              Downvote
+            </button>
+            </div>
+          ) : (
+            <div className="comment-vote-buttons">
+              <button className="vote-btn upvote disabled" disabled>
+                Upvote
+              </button>
+              <button className="vote-btn downvote disabled" disabled>
+                Downvote
+              </button>
+            </div>
+          )}
+        </div>
         {user && (
           <button
             className="reply-btn"
@@ -104,7 +144,6 @@ const PostPage = ({ postID, handleReplyClick }) => {
             Reply
           </button>
         )}
-        {/* Recursively render nested comments */}
         {Array.isArray(comment.commentIDs) && comment.commentIDs.length > 0 &&
           renderComments(comment.commentIDs, indentLevel + 1)}
       </div>
@@ -143,7 +182,6 @@ const PostPage = ({ postID, handleReplyClick }) => {
         <div className="post-content">{post.content}</div>
         <div className="post-stats">
           <span>{post.upvotes} upvotes | </span>
-          {console.log("Post upvotes: ", post.upvotes)}
           <span>{post.views} views</span>
           <span className="separator"> | </span>
           <span>{totalCommentCount} comments</span>
@@ -152,14 +190,14 @@ const PostPage = ({ postID, handleReplyClick }) => {
           <div className="vote-buttons">
             <button
               className={`vote-btn upvote ${user.reputation < 50 ? "disabled" : ""}`}
-              onClick={handleUpvote}
+              onClick={handleUpvotePost}
               disabled={user.reputation < 50}
             >
               Upvote
             </button>
             <button
               className={`vote-btn downvote ${user.reputation < 50 ? "disabled" : ""}`}
-              onClick={handleDownvote}
+              onClick={handleDownvotePost}
               disabled={user.reputation < 50}
             >
               Downvote
@@ -188,7 +226,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
 
       <div className="comments-section">
         {comments.length > 0
-          ? renderComments(comments) // Start rendering from the top-level comments
+          ? renderComments(comments) 
           : "No comments yet."}
       </div>
     </div>
