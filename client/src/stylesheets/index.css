@@ -165,6 +165,31 @@ body {
 }
 
 /* Home page styling */
+#joined-posts-container{
+  margin: 20px 0;
+}
+#other-posts-container {
+  margin: 20px 0;
+}
+
+.posts-list {
+  max-height: 400px; /* Adjust the height as needed */
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.post {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.post:last-child {
+  border-bottom: none;
+}
+
 #home-page {
 margin-left: 220px; 
 margin-top: 78px; 
@@ -172,7 +197,7 @@ padding: 20px;
 width: calc(100% - 240px);
 box-sizing: border-box;
 height: calc(100vh - 78px);
-overflow-y: hidden;
+overflow-y: scroll;
 display: flex;
 flex-direction: column;
   

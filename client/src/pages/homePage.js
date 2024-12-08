@@ -4,14 +4,14 @@ import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
 
 const HomePage = ({ onPostClick }) => {
-  const [posts, setPosts] = useState([]);
+  const [joinedPosts, setJoinedPosts] = useState([]);
+  const [otherPosts, setOtherPosts] = useState([]);
   const [commentCounts, setCommentCounts] = useState([]);
   const [communities, setCommunities] = useState([]);
   const [linkFlairs, setLinkFlairs] = useState([]);
   const [sortOrder, setSortOrder] = useState("newest");
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,9 +23,35 @@ const HomePage = ({ onPostClick }) => {
             api.getAllLinkFlairs(),
           ]);
 
-        setPosts(fetchedPosts);
         setCommunities(fetchedCommunities);
         setLinkFlairs(fetchedLinkFlairs);
+
+        // Separate posts into joined and other communities
+        const userJoinedCommunities = user
+          ? fetchedCommunities.filter((community) =>
+              community.members.includes(user.displayName)
+            )
+          : [];
+        const joinedCommunityIDs = userJoinedCommunities.map((c) => c._id);
+
+        const joinedPosts = fetchedPosts.filter((post) =>
+          joinedCommunityIDs.some((communityId) =>
+            fetchedCommunities
+              .find((community) => community._id === communityId)
+              .postIDs.includes(post._id)
+          )
+        );
+        const otherPosts = fetchedPosts.filter(
+          (post) =>
+            !joinedCommunityIDs.some((communityId) =>
+              fetchedCommunities
+                .find((community) => community._id === communityId)
+                .postIDs.includes(post._id)
+            )
+        );
+
+        setJoinedPosts(joinedPosts);
+        setOtherPosts(otherPosts);
 
         // Fetch comment counts and latest comment dates for each post
         const counts = await Promise.all(
@@ -68,9 +94,9 @@ const HomePage = ({ onPostClick }) => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
-  const sortPosts = () => {
+  const sortPosts = (posts) => {
     if (!posts || posts.length === 0) return [];
 
     const postsCopy = [...posts];
@@ -96,7 +122,8 @@ const HomePage = ({ onPostClick }) => {
     }
   };
 
-  const sortedPosts = sortPosts();
+  const sortedJoinedPosts = sortPosts(joinedPosts);
+  const sortedOtherPosts = sortPosts(otherPosts);
 
   const getCommentCount = (postId) => {
     const countObj = commentCounts.find((count) => count.postId === postId);
@@ -131,11 +158,48 @@ const HomePage = ({ onPostClick }) => {
         </div>
       </div>
 
-      <div>{sortedPosts.length} posts</div>
-      <hr />
+      <div id="joined-posts-container">
+        <h2>Posts from Communities You've Joined</h2>
+        {sortedJoinedPosts.map((post) => {
+          const community = communities.find((c) =>
+            c.postIDs.includes(post._id)
+          );
+          const linkFlair =
+            post.linkFlairID && post.linkFlairID.length > 0
+              ? linkFlairs.find((f) => f._id === post.linkFlairID[0]._id)
+              : null;
 
-      <div id="posts-container">
-        {sortedPosts.map((post) => {
+          const totalComments = getCommentCount(post._id);
+
+          return (
+            <div className="post" key={post._id}>
+              <div className="post-header">
+                {community ? community.name : "Unknown Community"} |{" "}
+                {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}{" "}
+              </div>
+              <div className="post-title" onClick={() => onPostClick(post._id)}>
+                {post.title}
+              </div>
+              {linkFlair && (
+                <div className="post-flair">{linkFlair.content}</div>
+              )}
+              <div className="post-content">
+                {post.content.length > 80
+                  ? post.content.substring(0, 80) + "..."
+                  : post.content}
+              </div>
+              <div className="post-stats">
+                {post.upvotes} upvotes | {post.views} views | {totalComments} comments
+              </div>
+              <hr className="divider" />
+            </div>
+          );
+        })}
+      </div>
+
+      <div id="other-posts-container">
+        <h2>Posts from Other Communities</h2>
+        {sortedOtherPosts.map((post) => {
           const community = communities.find((c) =>
             c.postIDs.includes(post._id)
           );
