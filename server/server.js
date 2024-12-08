@@ -232,6 +232,7 @@ app.get("/posts/:postId/comments", async (req, res) => {
             commentedBy: comment.commentedBy,
             commentedDate: comment.commentedDate,
             commentIDs: buildNestedComments(comment.commentIDs || []), 
+            upvotes: comment.upvotes,
           };
         });
     };

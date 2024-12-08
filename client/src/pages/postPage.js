@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { formatTimestamp } from "../utils/utils";
 import { api } from "../services/api";
+import { useUser } from "../utils/userContext";
 
 const PostPage = ({ postID, handleReplyClick }) => {
   const [post, setPost] = useState(null);
@@ -9,6 +10,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalCommentCount, setTotalCommentCount] = useState(0);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -59,6 +61,28 @@ const PostPage = ({ postID, handleReplyClick }) => {
     fetchPostData();
   }, [postID]);
 
+  const handleUpvote = async () => {
+    if (!user || user.reputation < 50) return;
+    try {
+      const updatedPost = await api.upvotePost(postID);
+      setPost(updatedPost);
+    } catch (error) {
+      console.error("Error upvoting post:", error);
+    }
+  };
+
+  const handleDownvote = async () => {
+    if (!user || user.reputation < 50) return;
+    try {
+      const updatedPost = await api.downvotePost(postID);
+      setPost(updatedPost);
+    } catch (error) {
+      console.error("Error downvoting post:", error);
+    }
+  };
+
+  console.log("Frontend comments: ", comments); 
+
   const renderComments = (comments, indentLevel = 0) => {
     return comments.map((comment) => (
       <div
@@ -70,12 +94,16 @@ const PostPage = ({ postID, handleReplyClick }) => {
           {comment.commentedBy} | {formatTimestamp(new Date(comment.commentedDate))}
         </div>
         <div className="comment-content">{comment.content}</div>
-        <button
-          className="reply-btn"
-          onClick={() => handleReplyClick(comment._id)}
-        >
-          Reply
-        </button>
+        <div className="comment-stats">{comment.upvotes} upvotes</div>
+        {console.log("Comment upvotes: ", comment.upvotes)}
+        {user && (
+          <button
+            className="reply-btn"
+            onClick={() => handleReplyClick(comment._id)}
+          >
+            Reply
+          </button>
+        )}
         {/* Recursively render nested comments */}
         {Array.isArray(comment.commentIDs) && comment.commentIDs.length > 0 &&
           renderComments(comment.commentIDs, indentLevel + 1)}
@@ -115,16 +143,46 @@ const PostPage = ({ postID, handleReplyClick }) => {
         <div className="post-content">{post.content}</div>
         <div className="post-stats">
           <span>{post.upvotes} upvotes | </span>
+          {console.log("Post upvotes: ", post.upvotes)}
           <span>{post.views} views</span>
           <span className="separator"> | </span>
           <span>{totalCommentCount} comments</span>
         </div>
-        <button
-          className="add-comment-btn"
-          onClick={() => handleReplyClick(null)}
-        >
-          Add a Comment
-        </button>
+        {user ? (
+          <div className="vote-buttons">
+            <button
+              className={`vote-btn upvote ${user.reputation < 50 ? "disabled" : ""}`}
+              onClick={handleUpvote}
+              disabled={user.reputation < 50}
+            >
+              Upvote
+            </button>
+            <button
+              className={`vote-btn downvote ${user.reputation < 50 ? "disabled" : ""}`}
+              onClick={handleDownvote}
+              disabled={user.reputation < 50}
+            >
+              Downvote
+            </button>
+          </div>
+        ) : (
+          <div className="vote-buttons">
+            <button className="vote-btn upvote disabled" disabled>
+              Upvote
+            </button>
+            <button className="vote-btn downvote disabled" disabled>
+              Downvote
+            </button>
+          </div>
+        )}
+        {user && (
+          <button
+            className="add-comment-btn"
+            onClick={() => handleReplyClick(null)}
+          >
+            Add a Comment
+          </button>
+        )}
         <hr className="divider" />
       </div>
 
