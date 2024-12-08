@@ -28,24 +28,20 @@ app.get("/communities", async (req, res) => {
   }
 });
 
-// User Registration
 app.post("/register", async (req, res) => {
     const { firstName, lastName, email, displayName, password, passwordVerification } = req.body;
   
-    // Check if passwords match
     if (password !== passwordVerification) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
   
     try {
-      // Check if the email or display name already exists
       const existingUser = await User.findOne({ $or: [{ email }, { displayName }] });
       if (existingUser) {
         return res.status(400).json({ message: "Email or Display Name already exists" });
       }
       console.log('Password', password);
   
-      // Create new user
       const newUser = new User({
         firstName,
         lastName,
@@ -62,7 +58,6 @@ app.post("/register", async (req, res) => {
     }
   });
   
-  // User Login
   app.post("/login", async (req, res) => {
     const { email, password } = req.body;
   
@@ -72,7 +67,6 @@ app.post("/register", async (req, res) => {
         return res.status(404).json({ message: "User not found" });
       }
   
-      // Compare passwords
       const isMatch = await bcrypt.compare(password, user.password);
       console.log('Entered email:', user.email);
       console.log('Entered password:', password);
@@ -83,13 +77,12 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ message: "Invalid password" });
       }
   
-      // Return the full user object, excluding sensitive fields like password
       const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password; // Don't send the password to the client
+      delete userWithoutPassword.password; 
   
       res.status(200).json({
         message: "Login successful",
-        user: userWithoutPassword, // Send the full user object
+        user: userWithoutPassword, 
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -111,6 +104,16 @@ app.post("/communities", async (req, res) => {
     res.status(201).json(newCommunity);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+app.get("/users/:userId/communities", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const communities = await Community.find({ members: userId });
+    res.json(communities);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -147,7 +150,6 @@ app.post("/posts", async (req, res) => {
 
   try {
     const newPost = await post.save();
-    // Update community's postIDs
     if (req.body.communityId) {
       await Community.findByIdAndUpdate(req.body.communityId, {
         $push: { postIDs: newPost._id },
@@ -214,29 +216,26 @@ app.get("/posts/:postId/comments", async (req, res) => {
       },
     };
 
-    // Fetch the post with populated comments
     const post = await Post.findById(req.params.postId).populate(populateNestedComments);
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Recursive function to build and sort the nested comment structure
     const buildNestedComments = (comments) => {
       return comments
-        .sort((a, b) => new Date(b.commentedDate) - new Date(a.commentedDate)) // Sort by newest first
+        .sort((a, b) => new Date(b.commentedDate) - new Date(a.commentedDate)) 
         .map((comment) => {
           return {
             _id: comment._id,
             content: comment.content,
             commentedBy: comment.commentedBy,
             commentedDate: comment.commentedDate,
-            commentIDs: buildNestedComments(comment.commentIDs || []), // Recursively process child comments
+            commentIDs: buildNestedComments(comment.commentIDs || []), 
           };
         });
     };
 
-    // Process all top-level comments of the post
     const nestedComments = buildNestedComments(post.commentIDs || []);
     console.log("Nested Comments: ",nestedComments);
 
@@ -257,7 +256,6 @@ app.post("/posts/:postId/comments", async (req, res) => {
 
   try {
     const newComment = await comment.save();
-    // Update post or parent comment
     if (req.body.parentCommentId) {
       await Comment.findByIdAndUpdate(req.body.parentCommentId, {
         $push: { commentIDs: newComment._id },
@@ -281,8 +279,34 @@ app.get("/search", async (req, res) => {
         { title: { $regex: query, $options: "i" } },
         { content: { $regex: query, $options: "i" } },
       ],
-    }).populate("linkFlairID");
-    res.json(posts);
+    })
+      .populate("linkFlairID")
+      .populate({
+        path: "commentIDs",
+        select: "text",
+      });
+
+    const communityIds = await Community.find({
+      postIDs: { $in: posts.map((post) => post._id) },
+    });
+
+    const postToCommunityMap = {};
+    communityIds.forEach((community) => {
+      community.postIDs.forEach((postId) => {
+        postToCommunityMap[postId] = {
+          name: community.name,
+          description: community.description,
+          id: community._id,
+        };
+      });
+    });
+
+    const postsWithCommunity = posts.map((post) => ({
+      ...post.toObject(), 
+      community: postToCommunityMap[post._id] || null,
+    }));
+
+    res.json(postsWithCommunity);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

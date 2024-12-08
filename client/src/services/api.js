@@ -15,6 +15,13 @@ export const api = {
     return response.data;
   },
 
+  getUserCommunities: async (userId) => {
+    const response = await axios.get(
+      `${API_BASE_URL}/users/${userId}/communities`
+    );
+    return response.data;
+  },
+
   createCommunity: async (communityData) => {
     const response = await axios.post(
       `${API_BASE_URL}/communities`,
@@ -92,11 +99,16 @@ export const api = {
   },
 
   joinCommunity: async (communityId, userId) => {
-    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/join`,{ userId });
+    const response = await axios.post(
+      `${API_BASE_URL}/communities/${communityId}/join`,
+      { userId }
+    );
     return response.data;
   },
   leaveCommunity: async (communityId, userId) => {
-    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/leave`,{ userId }
+    const response = await axios.post(
+      `${API_BASE_URL}/communities/${communityId}/leave`,
+      { userId }
     );
     return response.data;
   },

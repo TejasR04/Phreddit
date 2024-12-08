@@ -33,7 +33,6 @@ const Phreddit = () => {
               const userJoinedB = b.members.includes(user._id);
               if (userJoinedA && !userJoinedB) return -1;
               if (!userJoinedA && userJoinedB) return 1;
-              console.log("userJoinedA", userJoinedA);
               return 0;
             })
           : allCommunities;

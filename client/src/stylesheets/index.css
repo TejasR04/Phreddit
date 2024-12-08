@@ -418,6 +418,18 @@ post-view-title {
   margin: 20px 0;
 }
 
+.section-header {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 20px 0 10px;
+}
+
+.section-divider {
+  border: 0;
+  border-top: 2px solid #ff4500;
+  margin: 30px 0;
+}
+
 .comments-section {
   margin-top: 20px;
 }
