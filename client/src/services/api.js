@@ -98,18 +98,13 @@ export const api = {
     return response.data;
   },
 
-  joinCommunity: async (communityId, userId) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/communities/${communityId}/join`,
-      { userId }
-    );
+  joinCommunity: async (communityId, displayName) => {
+    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/join`, { displayName });
     return response.data;
   },
-  leaveCommunity: async (communityId, userId) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/communities/${communityId}/leave`,
-      { userId }
-    );
+  leaveCommunity: async (communityId, displayName) => {
+    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/leave`, { displayName });
     return response.data;
   },
+  
 };

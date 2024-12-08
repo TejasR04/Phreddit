@@ -81,10 +81,16 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
       const communityData = {
         name: "p/" + formData.name.trim(),
         description: formData.description.trim(),
-        members: [String(user._id)],
         creator: String(user.displayName),
       };
       const newCommunity = await api.createCommunity(communityData);
+      const fetchedCommunity= await api.getAllCommunities();
+      const selectedCommunity = fetchedCommunity.find(
+        (c) => c.name === communityData.name
+      );
+      //Join the new community
+      await api.joinCommunity(selectedCommunity._id, user.displayName);
+
 
       const updatedCommunities = await api.getAllCommunities();
       window.dispatchEvent(new CustomEvent('communityCreated', {

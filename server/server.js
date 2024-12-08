@@ -237,7 +237,7 @@ app.get("/posts/:postId/comments", async (req, res) => {
     };
 
     const nestedComments = buildNestedComments(post.commentIDs || []);
-    console.log("Nested Comments: ",nestedComments);
+    //console.log("Nested Comments: ",nestedComments);
 
     res.json(nestedComments);
   } catch (err) {
@@ -338,14 +338,16 @@ app.post("/linkFlairs", async (req, res) => {
 app.post("/communities/:communityId/join", async (req, res) => {
   try {
     const { communityId } = req.params;
-    const { userId } = req.body;
+    const { displayName } = req.body; // Use displayName instead of userId
 
     const community = await Community.findById(communityId);
-    const user = await User.findById(userId);
+    const user = await User.findOne({ displayName }); // Find user by displayName
 
-    if (!community.members.includes(userId)) {
-      community.members.push(userId);
-      user.communityIDs.push(communityId);
+    if (!community.members.includes(displayName)) { // Check for displayName in members array
+      console.log("The user displayName being added is: ", displayName);
+      //Display the communitId being added to the user
+      community.members.push(displayName); // Add displayName to community's members array
+      user.communityIDs.push(communityId); // Add communityId to user's communityIDs array
 
       await community.save();
       await user.save();
@@ -360,15 +362,17 @@ app.post("/communities/:communityId/join", async (req, res) => {
 app.post("/communities/:communityId/leave", async (req, res) => {
   try {
     const { communityId } = req.params;
-    const { userId } = req.body;
+    const { displayName } = req.body; // Use displayName instead of userId
 
     const community = await Community.findById(communityId);
-    const user = await User.findById(userId);
+    const user = await User.findOne({ displayName }); // Find user by displayName
 
+    // Remove displayName from community's members array
     community.members = community.members.filter(
-      (memberId) => memberId.toString() !== userId
+      (member) => member !== displayName
     );
 
+    // Remove communityId from user's communityIDs array
     user.communityIDs = user.communityIDs.filter(
       (commId) => commId.toString() !== communityId
     );

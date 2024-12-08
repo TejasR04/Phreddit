@@ -18,8 +18,8 @@ const NewPostPage = ({ setCurrentView }) => {
       try {
         const allCommunities = await api.getAllCommunities();
         const sortedCommunities = allCommunities.sort((a, b) => {
-          const userJoinedA = a.members.includes(user._id);
-          const userJoinedB = b.members.includes(user._id);
+          const userJoinedA = a.members.includes(user.displayName);
+          const userJoinedB = b.members.includes(user.displayName);
           if (userJoinedA && !userJoinedB) return -1;
           if (!userJoinedA && userJoinedB) return 1;
           return 0;
