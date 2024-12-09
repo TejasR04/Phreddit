@@ -135,7 +135,7 @@ const HomePage = ({ onPostClick }) => {
   return (
     <div id="home-page">
       <div className="header-container">
-        <h1 className="header-title">All Posts</h1>
+        {user ? <h1 className="header-title"> </h1>: <h1 className="header-title">All Posts</h1>}
         <div className="sort-buttons">
           <button
             className={sortOrder === "newest" ? "active" : ""}
@@ -158,47 +158,50 @@ const HomePage = ({ onPostClick }) => {
         </div>
       </div>
 
-      <div id="joined-posts-container">
-        <h2>Posts from Communities You've Joined</h2>
-        {sortedJoinedPosts.map((post) => {
-          const community = communities.find((c) =>
-            c.postIDs.includes(post._id)
-          );
-          const linkFlair =
-            post.linkFlairID && post.linkFlairID.length > 0
-              ? linkFlairs.find((f) => f._id === post.linkFlairID[0]._id)
-              : null;
+      {/* Conditionally render posts based on whether the user is logged in */}
+      {user ? (
+        <div id="joined-posts-container">
+          <h2>Posts from Communities You've Joined</h2>
+          {sortedJoinedPosts.map((post) => {
+            const community = communities.find((c) =>
+              c.postIDs.includes(post._id)
+            );
+            const linkFlair =
+              post.linkFlairID && post.linkFlairID.length > 0
+                ? linkFlairs.find((f) => f._id === post.linkFlairID[0]._id)
+                : null;
 
-          const totalComments = getCommentCount(post._id);
+            const totalComments = getCommentCount(post._id);
 
-          return (
-            <div className="post" key={post._id}>
-              <div className="post-header">
-                {community ? community.name : "Unknown Community"} |{" "}
-                {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}{" "}
+            return (
+              <div className="post" key={post._id}>
+                <div className="post-header">
+                  {community ? community.name : "Unknown Community"} |{" "}
+                  {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}{" "}
+                </div>
+                <div className="post-title" onClick={() => onPostClick(post._id)}>
+                  {post.title}
+                </div>
+                {linkFlair && (
+                  <div className="post-flair">{linkFlair.content}</div>
+                )}
+                <div className="post-content">
+                  {post.content.length > 80
+                    ? post.content.substring(0, 80) + "..."
+                    : post.content}
+                </div>
+                <div className="post-stats">
+                  {post.upvotes} upvotes | {post.views} views | {totalComments} comments
+                </div>
+                <hr className="divider" />
               </div>
-              <div className="post-title" onClick={() => onPostClick(post._id)}>
-                {post.title}
-              </div>
-              {linkFlair && (
-                <div className="post-flair">{linkFlair.content}</div>
-              )}
-              <div className="post-content">
-                {post.content.length > 80
-                  ? post.content.substring(0, 80) + "..."
-                  : post.content}
-              </div>
-              <div className="post-stats">
-                {post.upvotes} upvotes | {post.views} views | {totalComments} comments
-              </div>
-              <hr className="divider" />
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       <div id="other-posts-container">
-        <h2>Posts from Other Communities</h2>
+        {!user ? null : <h2>Other Communities</h2>}
         {sortedOtherPosts.map((post) => {
           const community = communities.find((c) =>
             c.postIDs.includes(post._id)

@@ -149,7 +149,10 @@ app.post("/posts", async (req, res) => {
   });
 
   try {
+    const creator = await User.findOne({ displayName: req.body.postedBy });
+    creator.postIDs.push(post._id);
     const newPost = await post.save();
+    await creator.save();
     if (req.body.communityId) {
       await Community.findByIdAndUpdate(req.body.communityId, {
         $push: { postIDs: newPost._id },
@@ -405,23 +408,30 @@ app.patch("/posts/:postId/upvote", async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
+    const creatorName = post.postedBy;
+    //Find the user who created the post
+    const creator = await User.findOne({ displayName: creatorName });
 
     if (post.upvoteMembers.includes(displayName)) {
       // Case 1: Cancel upvote
       post.upvoteMembers = post.upvoteMembers.filter((member) => member !== displayName);
       post.upvotes -= 1;
+      creator.reputation -= 5;
     } else if (post.downvoteMembers.includes(displayName)) {
       // Case 2: Switch vote
       post.downvoteMembers = post.downvoteMembers.filter((member) => member !== displayName);
       post.upvoteMembers.push(displayName);
       post.upvotes += 2;
+      creator.reputation += 15;
     } else {
       // Case 3: New upvote
       post.upvoteMembers.push(displayName);
       post.upvotes += 1;
+      creator.reputation += 5;
     }
 
     await post.save();
+    await creator.save();
     res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ message: "Error upvoting post", error });
@@ -433,23 +443,30 @@ app.patch("/comments/:commentId/upvote", async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
+    const creatorName = comment.commentedBy;
+    //Find the user who created the comment
+    const creator = await User.findOne({ displayName: creatorName });
 
     if (comment.upvoteMembers.includes(displayName)) {
       // Case 1: Cancel upvote
       comment.upvoteMembers = comment.upvoteMembers.filter((member) => member !== displayName);
       comment.upvotes -= 1;
+      creator.reputation -= 5;
     } else if (comment.downvoteMembers.includes(displayName)) {
       // Case 2: Switch vote
       comment.downvoteMembers = comment.downvoteMembers.filter((member) => member !== displayName);
       comment.upvoteMembers.push(displayName);
       comment.upvotes += 2;
+      creator.reputation += 15;
     } else {
       // Case 3: New upvote
       comment.upvoteMembers.push(displayName);
       comment.upvotes += 1;
+      creator.reputation += 5;
     }
 
     await comment.save();
+    await creator.save();
     res.status(200).json(comment);
   } catch (error) {
     res.status(500).json({ message: "Error upvoting comment", error });
@@ -461,24 +478,31 @@ app.patch("/posts/:postId/downvote", async (req, res) => {
   const { displayName } = req.body; // User's display name passed in the request body
   try {
     const post = await Post.findById(req.params.postId);
+    const creatorName = post.postedBy;
+    //Find the user who created the post
+    const creator = await User.findOne({ displayName: creatorName });
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     if (post.downvoteMembers.includes(displayName)) {
       // Case 1: Cancel downvote
       post.downvoteMembers = post.downvoteMembers.filter((member) => member !== displayName);
       post.upvotes += 1;
+      creator.reputation += 10;
     } else if (post.upvoteMembers.includes(displayName)) {
       // Case 2: Switch vote
       post.upvoteMembers = post.upvoteMembers.filter((member) => member !== displayName);
       post.downvoteMembers.push(displayName);
       post.upvotes -= 2;
+      creator.reputation -= 15;
     } else {
       // Case 3: New downvote
       post.downvoteMembers.push(displayName);
       post.upvotes -= 1;
+      creator.reputation -= 10;
     }
 
     await post.save();
+    await creator.save();
     res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ message: "Error downvoting post", error });
@@ -490,24 +514,31 @@ app.patch("/comments/:commentId/downvote", async (req, res) => {
   const { displayName } = req.body;
   try {
     const comment = await Comment.findById(req.params.commentId);
+    const creatorName = comment.commentedBy;
+    //Find the user who created the comment
+    const creator = await User.findOne({ displayName: creatorName });
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
     if (comment.downvoteMembers.includes(displayName)) {
       // Case 1: Cancel downvote
       comment.downvoteMembers = comment.downvoteMembers.filter((member) => member !== displayName);
       comment.upvotes += 1;
+      creator.reputation += 10;
     } else if (comment.upvoteMembers.includes(displayName)) {
       // Case 2: Switch vote
       comment.upvoteMembers = comment.upvoteMembers.filter((member) => member !== displayName);
       comment.downvoteMembers.push(displayName);
       comment.upvotes -= 2;
+      creator.reputation -= 15;
     } else {
       // Case 3: New downvote
       comment.downvoteMembers.push(displayName);
       comment.upvotes -= 1;
+      creator.reputation -= 10;
     }
 
     await comment.save();
+    await creator.save();
     res.status(200).json(comment);
   } catch (error) {
     res.status(500).json({ message: "Error downvoting comment", error });
