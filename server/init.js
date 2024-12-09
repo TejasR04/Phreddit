@@ -97,7 +97,7 @@ mongoose
         email: 'user2@phreddit.com',
         password:'password', 
         createdDate: new Date('August 23, 2024 08:00:00'),
-        reputation: 100,
+        reputation: 49,
         displayName: 'shemp',
         postIDs: [],
         commentIDs: [],
