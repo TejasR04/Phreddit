@@ -86,7 +86,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
       }
     };
     fetchCommunityData();
-  }, [communityName]);
+  }, [communityName, user]);
 
   const handleCommunityMembership = async () => {
     if (!user) return;

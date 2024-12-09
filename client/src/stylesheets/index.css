@@ -474,7 +474,10 @@ flex-direction: column;
 }
 
 #search-results-header-section {
-margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between; /* Space between header and buttons */
+  align-items: center; /* Vertically align the items */
+  padding: 10px;
 }
 
 #search-results-header-top {

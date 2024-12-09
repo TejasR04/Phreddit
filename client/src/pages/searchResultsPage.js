@@ -174,7 +174,7 @@ const SearchResultsPage = ({ query, onPostClick }) => {
 
       <div id="search-results-container">
         <div>
-          <h2>Your Communities</h2>
+          {!user? <h2> </h2>: <h2>Your Communities</h2>}
           {sortedJoinedPosts.map((post) => (
             <div key={post._id} className="search-result-post">
               <div className="post-header">
@@ -199,7 +199,7 @@ const SearchResultsPage = ({ query, onPostClick }) => {
         </div>
         <hr />
         <div>
-          <h2>Other Communities</h2>
+        {!user? <h2> </h2>: <h2>Other Communities</h2>}
           {sortedOtherPosts.map((post) => (
             <div key={post._id} className="search-result-post">
               <div className="post-header">
