@@ -178,10 +178,7 @@ const SearchResultsPage = ({ query, onPostClick }) => {
           {sortedJoinedPosts.map((post) => (
             <div key={post._id} className="search-result-post">
               <div className="post-header">
-                {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}
-                <div className="post-community">
-                  {post.community?.name || "Unknown Community"}
-                </div>
+                {post.community?.name || "Unknown Community"} | {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}
               </div>
               <div className="post-title" onClick={() => onPostClick(post._id)}>
                 {post.title}
@@ -203,10 +200,7 @@ const SearchResultsPage = ({ query, onPostClick }) => {
           {sortedOtherPosts.map((post) => (
             <div key={post._id} className="search-result-post">
               <div className="post-header">
-                {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}
-                <div className="post-community">
-                  {post.community?.name || "Unknown Community"}
-                </div>
+                {post.communitiy?.name || "Unknown Community"} | {post.postedBy} | {formatTimestamp(new Date(post.postedDate))}
               </div>
               <div className="post-title" onClick={() => onPostClick(post._id)}>
                 {post.title}
