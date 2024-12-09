@@ -33,6 +33,11 @@ const commentSchema = new mongoose.Schema({
             type: String,
         },
     ],
+    downvoteMembers: [
+        {
+            type: String,
+        },
+    ],
 });
 
 commentSchema.virtual("url").get(function () {
