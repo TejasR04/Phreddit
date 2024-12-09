@@ -21,7 +21,6 @@ const PostPage = ({ postID, handleReplyClick }) => {
         setError(null);
 
         const postDetails = await api.getPost(postID);
-        await api.incrementViews(postID);
         setPost(postDetails);
 
         const allCommunities = await api.getAllCommunities();
