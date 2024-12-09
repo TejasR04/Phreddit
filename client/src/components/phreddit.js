@@ -11,8 +11,10 @@ import SearchResultsPage from "../pages/searchResultsPage";
 import WelcomePage from "../pages/welcomePage.js";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
+import { set } from "mongoose";
 
 const Phreddit = () => {
+  const [postID, setPostID] = useState(null);
   const [currentView, setCurrentView] = useState("welcome");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState(null);
@@ -118,6 +120,7 @@ const Phreddit = () => {
     }
   };
 
+ 
   const errorMessage = error ? "Error loading communities" : "";
   const renderView = () => {
     if (loading) return <div>Loading...</div>;

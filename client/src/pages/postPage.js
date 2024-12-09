@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { formatTimestamp } from "../utils/utils";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
+import { set } from "mongoose";
 
 const PostPage = ({ postID, handleReplyClick }) => {
+  const [currentView, setCurrentView] = useState(null);
   const [post, setPost] = useState(null);
   const [community, setCommunity] = useState(null);
   const [comments, setComments] = useState([]);
@@ -58,43 +60,51 @@ const PostPage = ({ postID, handleReplyClick }) => {
   const handleUpvotePost = async () => {
     if (!user || user.reputation < 50) return;
     try {
-      const updatedPost = await api.upvotePost(postID);
+      await api.upvotePost(postID, user.displayName);
+      // Re-fetch post data to update the UI
+      const updatedPost = await api.getPost(postID);
       setPost(updatedPost);
     } catch (error) {
       console.error("Error upvoting post:", error);
     }
   };
-
+  
   const handleDownvotePost = async () => {
     if (!user || user.reputation < 50) return;
     try {
-      const updatedPost = await api.downvotePost(postID);
+      await api.downvotePost(postID, user.displayName);
+      // Re-fetch post data to update the UI
+      const updatedPost = await api.getPost(postID);
       setPost(updatedPost);
     } catch (error) {
       console.error("Error downvoting post:", error);
     }
   };
-
+  
   const handleUpvoteComment = async (commentID) => {
     if (!user || user.reputation < 50) return;
     try {
-      const updatedComments = await api.upvoteComment(commentID);
+      await api.upvoteComment(commentID, user.displayName);
+      // Re-fetch comments to update the UI
+      const updatedComments = await api.getComments(postID);
       setComments(updatedComments);
     } catch (error) {
       console.error("Error upvoting comment:", error);
     }
   };
-
+  
   const handleDownvoteComment = async (commentID) => {
     if (!user || user.reputation < 50) return;
     try {
-      const updatedComments = await api.downvoteComment(commentID);
+      await api.downvoteComment(commentID, user.displayName);
+      // Re-fetch comments to update the UI
+      const updatedComments = await api.getComments(postID);
       setComments(updatedComments);
     } catch (error) {
       console.error("Error downvoting comment:", error);
     }
   };
-
+  
   const renderComments = (comments, indentLevel = 0) => {
     return comments.map((comment) => (
       <div
@@ -119,7 +129,7 @@ const PostPage = ({ postID, handleReplyClick }) => {
               </button>
               <button
               className={`vote-btn downvote ${user.reputation < 50 ? "disabled" : ""}`}
-              onClick={handleDownvoteComment}
+              onClick={() => handleDownvoteComment(comment._id)}
               disabled={user.reputation < 50}
             >
               Downvote

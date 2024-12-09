@@ -147,8 +147,9 @@ mongoose
         views: 14,
         linkFlairID: [], // No link flair
         commentIDs: [], // Pre-populate comments
-        upvoteMembers: [], // Pre-populate upvotes
-        upvotes: 0,
+        upvoteMembers: [adminDisplayName, user1.displayName, user2.displayName ], // Pre-populate upvotes
+        downvoteMembers: [],
+        upvotes: 3,
       });
 
       const post2 = new Post({
@@ -160,8 +161,9 @@ mongoose
         views: 1030,
         linkFlairID: [], 
         commentIDs: [],
-        upvoteMembers: [],
-        upvotes: 0,
+        upvoteMembers: [user1.displayName, user2.displayName],
+        downvoteMembers: [adminDisplayName],
+        upvotes: 1,
       });
 
       const post3 = new Post({
@@ -173,6 +175,7 @@ mongoose
         linkFlairID: [],
         commentIDs: [],
         upvoteMembers: [],
+        downvoteMembers: [],
         upvotes: 0,
       });
 
@@ -185,7 +188,8 @@ mongoose
         linkFlairID: [],
         commentIDs: [],
         upvoteMembers: [],
-        upvotes: 0,
+        downvoteMembers: [user1.displayName],
+        upvotes: -1,
       });
 
       await Promise.all([post1.save(), post2.save(), post3.save(), post4.save()]);
@@ -198,15 +202,17 @@ mongoose
             commentedDate: new Date('August 23, 2024 08:22:00'),
             commentIDs: [],
             upvoteMembers: [],
-            upvotes: 0,
+            downvoteMembers: [user1.displayName],
+            upvotes: -1,
         });
         const comment2 = new Comment({
             content: 'Obvious rage bait, but if not, then you are absolutely the jerk in this situation. Please delete your Tron vehicle and leave us in peace. YTJ.',
             commentedBy: '',
             commentedDate: new Date('August 23, 2024 10:57:00'),
             commentIDs: [],
-            upvoteMembers: [],
-            upvotes: 0,
+            upvoteMembers: [user2.displayName],
+            downvoteMembers: [],
+            upvotes: 1,
         });
         await Promise.all([comment1.save(), comment2.save()]);
         console.log('Mock comments created.');

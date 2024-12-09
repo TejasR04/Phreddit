@@ -249,16 +249,18 @@ app.get("/posts/:postId/comments", async (req, res) => {
 
 
 app.post("/posts/:postId/comments", async (req, res) => {
+  const { content, commentedBy, parentCommentId, displayName } = req.body;
   const comment = new Comment({
-    content: req.body.content,
-    commentedBy: req.body.commentedBy,
+    content,
+    commentedBy,
     commentIDs: [],
   });
 
   try {
     const newComment = await comment.save();
-    if (req.body.parentCommentId) {
-      await Comment.findByIdAndUpdate(req.body.parentCommentId, {
+
+    if (parentCommentId) {
+      await Comment.findByIdAndUpdate(parentCommentId, {
         $push: { commentIDs: newComment._id },
       });
     } else {
@@ -266,11 +268,22 @@ app.post("/posts/:postId/comments", async (req, res) => {
         $push: { commentIDs: newComment._id },
       });
     }
+
+    // Update the user's commentIDs array
+    if (displayName) {
+      const user = await User.findOne({ displayName });
+      if (user) {
+        user.commentIDs.push(newComment._id);
+        await user.save();
+      }
+    }
+
     res.status(201).json(newComment);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: "Error creating comment", error: err });
   }
 });
+
 
 app.get("/search", async (req, res) => {
   const query = req.query.q;
@@ -386,6 +399,121 @@ app.post("/communities/:communityId/leave", async (req, res) => {
     res.status(500).json({ message: "Error leaving community", error });
   }
 });
+
+app.patch("/posts/:postId/upvote", async (req, res) => {
+  const { displayName } = req.body; // User's display name passed in the request body
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (post.upvoteMembers.includes(displayName)) {
+      // Case 1: Cancel upvote
+      post.upvoteMembers = post.upvoteMembers.filter((member) => member !== displayName);
+      post.upvotes -= 1;
+    } else if (post.downvoteMembers.includes(displayName)) {
+      // Case 2: Switch vote
+      post.downvoteMembers = post.downvoteMembers.filter((member) => member !== displayName);
+      post.upvoteMembers.push(displayName);
+      post.upvotes += 2;
+    } else {
+      // Case 3: New upvote
+      post.upvoteMembers.push(displayName);
+      post.upvotes += 1;
+    }
+
+    await post.save();
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ message: "Error upvoting post", error });
+  }
+});
+
+app.patch("/comments/:commentId/upvote", async (req, res) => {
+  const { displayName } = req.body;
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (comment.upvoteMembers.includes(displayName)) {
+      // Case 1: Cancel upvote
+      comment.upvoteMembers = comment.upvoteMembers.filter((member) => member !== displayName);
+      comment.upvotes -= 1;
+    } else if (comment.downvoteMembers.includes(displayName)) {
+      // Case 2: Switch vote
+      comment.downvoteMembers = comment.downvoteMembers.filter((member) => member !== displayName);
+      comment.upvoteMembers.push(displayName);
+      comment.upvotes += 2;
+    } else {
+      // Case 3: New upvote
+      comment.upvoteMembers.push(displayName);
+      comment.upvotes += 1;
+    }
+
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: "Error upvoting comment", error });
+  }
+});
+
+
+app.patch("/posts/:postId/downvote", async (req, res) => {
+  const { displayName } = req.body; // User's display name passed in the request body
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (post.downvoteMembers.includes(displayName)) {
+      // Case 1: Cancel downvote
+      post.downvoteMembers = post.downvoteMembers.filter((member) => member !== displayName);
+      post.upvotes += 1;
+    } else if (post.upvoteMembers.includes(displayName)) {
+      // Case 2: Switch vote
+      post.upvoteMembers = post.upvoteMembers.filter((member) => member !== displayName);
+      post.downvoteMembers.push(displayName);
+      post.upvotes -= 2;
+    } else {
+      // Case 3: New downvote
+      post.downvoteMembers.push(displayName);
+      post.upvotes -= 1;
+    }
+
+    await post.save();
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ message: "Error downvoting post", error });
+  }
+});
+
+
+app.patch("/comments/:commentId/downvote", async (req, res) => {
+  const { displayName } = req.body;
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (comment.downvoteMembers.includes(displayName)) {
+      // Case 1: Cancel downvote
+      comment.downvoteMembers = comment.downvoteMembers.filter((member) => member !== displayName);
+      comment.upvotes += 1;
+    } else if (comment.upvoteMembers.includes(displayName)) {
+      // Case 2: Switch vote
+      comment.upvoteMembers = comment.upvoteMembers.filter((member) => member !== displayName);
+      comment.downvoteMembers.push(displayName);
+      comment.upvotes -= 2;
+    } else {
+      // Case 3: New downvote
+      comment.downvoteMembers.push(displayName);
+      comment.upvotes -= 1;
+    }
+
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: "Error downvoting comment", error });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
