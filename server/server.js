@@ -28,6 +28,64 @@ app.get("/communities", async (req, res) => {
   }
 });
 
+app.get("/users", async (req, res) => {
+  try {
+    console.log("t");
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users." });
+  }
+});
+
+// server.js
+app.delete("/users/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get all user content
+    const userCommunities = await Community.find({ creator: user.displayName });
+    const userPosts = await Post.find({ postedBy: user.displayName });
+    const userComments = await Comment.find({ commentedBy: user.displayName });
+
+    // Delete all comments
+    for (const comment of userComments) {
+      await Comment.findByIdAndDelete(comment._id);
+    }
+
+    // Delete all posts and their associated comments
+    for (const post of userPosts) {
+      // Delete comments on this post
+      await Comment.deleteMany({ postID: post._id });
+      await Post.findByIdAndDelete(post._id);
+    }
+
+    // Delete all communities and their associated content
+    for (const community of userCommunities) {
+      // Delete all posts in community
+      const communityPosts = await Post.find({ _id: { $in: community.postIDs } });
+      for (const post of communityPosts) {
+        await Comment.deleteMany({ postID: post._id });
+        await Post.findByIdAndDelete(post._id);
+      }
+      await Community.findByIdAndDelete(community._id);
+    }
+
+    // Finally delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: "User and all associated content deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Failed to delete user and associated content" });
+  }
+});
+
 app.post("/register", async (req, res) => {
     const { firstName, lastName, email, displayName, password, passwordVerification } = req.body;
   

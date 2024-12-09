@@ -72,6 +72,7 @@ mongoose
         postIDs: [],
         commentIDs: [],
         communityIDs: [],
+        isAdmin: true,
       });
 
       await adminUser.save();

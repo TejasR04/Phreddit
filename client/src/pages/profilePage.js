@@ -4,30 +4,35 @@ import { useUser } from "../utils/userContext";
 
 const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
   const { user } = useUser();
+  const [selectedUser, setSelectedUser] = useState(null);   
   const [profile, setProfile] = useState(null);
   const [communities, setCommunities] = useState([]);
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
-  const [activeTab, setActiveTab] = useState("posts");
+  const [activeTab, setActiveTab] = useState(user?.isAdmin ? "users" : "posts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const isAdmin = user?.isAdmin;
 
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       setError(null);
       try {
-        const profileData = await api.getUserProfile(user._id);
+        if (isAdmin && activeTab === "users") {
+          fetchAllUsers();
+        }
+        const targetUser = selectedUser || user;
+        const profileData = await api.getUserProfile(targetUser._id);
         setProfile(profileData);
         const [userCommunities, userPosts, userComments] = await Promise.all([
-          api.getUserCommunities(user.displayName),
-          api.getUserPosts(user.displayName),
-          api.getUserComments(user.displayName),
+          api.getUserCommunities(targetUser.displayName),
+          api.getUserPosts(targetUser.displayName),
+          api.getUserComments(targetUser.displayName),
         ]);
+        console.log(userComments);
 
-        console.log("userCommunities", userCommunities);
-        console.log("userPosts", userPosts);
-        console.log("userComments", userComments);
         setCommunities(userCommunities);
         setPosts(userPosts);
         setComments(userComments);
@@ -41,7 +46,38 @@ const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
     if (user) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, isAdmin, activeTab, selectedUser]);
+
+  const handleBackToAdmin = () => {
+    setSelectedUser(null);
+    setActiveTab("users");
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const users = await api.getAllUsers();
+      setAllUsers(users);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this user? This will also delete all their communities, posts and comments."
+      )
+    ) {
+      try {
+        await api.deleteUser(userId);
+        setAllUsers((prevUsers) =>
+          prevUsers.filter((user) => user._id !== userId)
+        );
+      } catch (error) {
+        console.error("Failed to delete user:", error);
+      }
+    }
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -49,6 +85,38 @@ const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "users":
+        return (
+          <div>
+            {allUsers.length > 0 ? (
+              allUsers.map((user) => (
+                <div key={user._id}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedUser(user);
+                      setActiveTab("posts");
+                    }}
+                  >
+                    {user.displayName} ({user.email}) - Reputation:{" "}
+                    {user.reputation}
+                  </a>
+                  {user.isAdmin !== true && (
+                    <button
+                      onClick={() => handleDeleteUser(user._id)}
+                      className="delete-button"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>No users found.</p>
+            )}
+          </div>
+        );
       case "communities":
         return (
           <div>
@@ -132,7 +200,18 @@ const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
 
   return (
     <div id="user-profile-page">
-      <h1>User Profile</h1>
+      <h1>
+        {selectedUser ? (
+          <>
+            {selectedUser.displayName}'s Profile
+            <div className="tabs">
+              <button onClick={handleBackToAdmin}>Back to Users</button>
+            </div>
+          </>
+        ) : (
+          "User Profile"
+        )}
+      </h1>
       {profile && (
         <div>
           <p>Display Name: {profile.displayName}</p>
@@ -144,6 +223,9 @@ const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
         </div>
       )}
       <div className="tabs">
+        {isAdmin && !selectedUser && (
+          <button onClick={() => handleTabChange("users")}>Users</button>
+        )}
         <button onClick={() => handleTabChange("communities")}>
           Communities
         </button>

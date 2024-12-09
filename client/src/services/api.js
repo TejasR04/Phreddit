@@ -8,6 +8,15 @@ export const api = {
     return response.data;
   },
 
+  getAllUsers: async () => {
+    const response = await axios.get(`${API_BASE_URL}/users`);
+    return response.data;
+  },
+
+  deleteUser: async (userId) => {
+    await axios.delete(`${API_BASE_URL}/users/${userId}`);
+  },
+
   getCommunity: async (communityId) => {
     const response = await axios.get(
       `${API_BASE_URL}/communities/${communityId}`

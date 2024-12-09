@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
         ref: "Community",
         },
     ],
+    isAdmin: {
+        type: Boolean,
+        default: false,
+    },
     });
 
     userSchema.virtual("url").get(function () {
