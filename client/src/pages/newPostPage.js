@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
 
-const NewPostPage = ({ setCurrentView }) => {
+const NewPostPage = ({ setCurrentView, isEdit, editData }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [communityID, setCommunityID] = useState("");
@@ -32,9 +32,23 @@ const NewPostPage = ({ setCurrentView }) => {
         console.error("Error fetching data:", err);
       }
     };
-
+    if (isEdit && editData) {
+      setTitle(editData.title); 
+      setContent(editData.content);
+      setCommunityID(editData.communityId);
+      setLinkFlair(editData.linkFlairID[0]);
+    }
     fetchData();
-  }, []);
+  }, [isEdit, editData]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        await api.deletePost(editData._id);
+        setCurrentView({ view: "profile" });
+      } catch (err) {}
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,14 +70,12 @@ const NewPostPage = ({ setCurrentView }) => {
     }
 
     try {
-      // Add new link flair if provided and not already existing
       let linkFlairID = linkFlair;
       if (newLinkFlair && !linkFlair) {
         const newFlair = await api.createLinkFlair({ content: newLinkFlair });
         linkFlairID = newFlair._id;
       }
 
-      // Create the new post
       const newPost = {
         title,
         content,
@@ -72,16 +84,18 @@ const NewPostPage = ({ setCurrentView }) => {
         linkFlairID: linkFlairID ? [linkFlairID] : [],
       };
 
-      await api.createPost(newPost);
+      if (isEdit) {
+        await api.updatePost(editData._id, newPost);
+      } else {
+        await api.createPost(newPost);
+      }
 
-      // Clear form fields after submission
       setTitle("");
       setContent("");
       setCommunityID("");
       setLinkFlair("");
       setNewLinkFlair("");
 
-      // Redirect to the Home Page
       setCurrentView("home");
     } catch (err) {
       console.error("Error creating post:", err);
@@ -114,7 +128,9 @@ const NewPostPage = ({ setCurrentView }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="title">Post Title (Required, Max 100 characters)</label>
+          <label htmlFor="title">
+            Post Title (Required, Max 100 characters)
+          </label>
           <input
             type="text"
             id="title"
@@ -162,16 +178,17 @@ const NewPostPage = ({ setCurrentView }) => {
 
         <div className="form-group">
           <label htmlFor="creator">Creator </label>
-          <input
-            type="text"
-            value={user.displayName}
-            disabled
-          />
+          <input type="text" value={user.displayName} disabled />
         </div>
 
         {error && <div className="error">{error}</div>}
 
         <button type="submit">Submit Post</button>
+        {isEdit && (
+          <button type="button" onClick={handleDelete}>
+            Delete
+          </button>
+        )}
       </form>
     </div>
   );

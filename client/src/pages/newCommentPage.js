@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
-const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
+const NewCommentPage = ({ setCurrentView, postID, parentCommentID, isEdit, editData }) => {
   const { user } = useUser(); 
   const [username, setUsername] = useState("");
   const [commentContent, setCommentContent] = useState("");
@@ -13,7 +13,10 @@ const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
     if (user) {
       setUsername(user.displayName);
     }
-  }, [user]);
+    if (isEdit && editData) {
+      setCommentContent(editData.content);
+    }
+  }, [isEdit, editData, user]);
 
   // Validate input fields
   const validateInputs = () => {
@@ -32,12 +35,19 @@ const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
     return isValid;
   };
 
-  // Handle comment submission
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this comment?")) {
+      try {
+        await api.deleteComment(editData._id);
+        setCurrentView({ view: "profile" });
+      } catch (err) {}
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateInputs()) return;
 
-    // Prepare comment data with the logged-in user's displayName
     const commentData = {
       content: commentContent,
       commentedBy: user ? user.displayName : "Guest", 
@@ -51,9 +61,12 @@ const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
       setLoading(true);
       setSubmissionError("");
 
-      await api.createComment(postID, commentData, user.displayName); 
+      if (isEdit) {
+        await api.updateComment(editData._id, commentData);
+      } else {
+        await api.createComment(postID, commentData, user.displayName);
+      }
 
-      // Clear input fields and navigate back
       setCommentContent("");
       setCurrentView("post");
     } catch (error) {
@@ -83,6 +96,11 @@ const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
         <button type="submit" disabled={loading || !user}>
           {loading ? "Submitting..." : "Submit Comment"}
         </button>
+        {isEdit && (
+          <button type="button" onClick={handleDelete}>
+            Delete
+          </button>
+        )}
         {submissionError && <div className="error">{submissionError}</div>}
       </form>
       {!user && <div className="error">You must be logged in to comment.</div>}

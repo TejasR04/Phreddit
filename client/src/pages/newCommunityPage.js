@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "../utils/userContext";
 
-const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
+const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity, isEdit, editData }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -17,6 +17,26 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
+
+  useEffect(() => {
+    if (isEdit && editData) {
+      setFormData({
+        name: editData.name.replace(/^p\//, ""), // Remove 'p/' prefix if present
+        description: editData.description,
+        creator: editData.creator,
+      });
+    }
+  }, [isEdit, editData]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this community?")) {
+      try {
+        await api.deleteCommunity(editData._id);
+        setCurrentView({ view: "profile" });
+      } catch (err) {
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,7 +87,7 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
         community.name.replace(/^p\//, '').toLowerCase() === formData.name.trim().toLowerCase()
     );
 
-    if (isDuplicateName) {
+    if (isDuplicateName && !isEdit) {
       setErrors((prev) => ({
         ...prev,
         name: "A community with this name already exists. Please choose a unique name.",
@@ -83,7 +103,13 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
         description: formData.description.trim(),
         creator: String(user.displayName),
       };
-      const newCommunity = await api.createCommunity(communityData);
+
+      let community;
+      if (isEdit) {
+        community = await api.updateCommunity(editData._id, communityData);
+      } else {
+        community = await api.createCommunity(communityData);
+      }
       const fetchedCommunity= await api.getAllCommunities();
       const selectedCommunity = fetchedCommunity.find(
         (c) => c.name === communityData.name
@@ -91,13 +117,12 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
       //Join the new community
       await api.joinCommunity(selectedCommunity._id, user.displayName);
 
-
       const updatedCommunities = await api.getAllCommunities();
       window.dispatchEvent(new CustomEvent('communityCreated', {
         detail: { communities: updatedCommunities }
       }))
       // Navigate to the newly created community
-      setSelectedCommunity(newCommunity.name);
+      setSelectedCommunity(community.name);
       setCurrentView("community");
     } catch (error) {
       console.error("Error creating community:", error);
@@ -162,23 +187,19 @@ const NewCommunityPage = ({ api, setCurrentView, setSelectedCommunity }) => {
           <label htmlFor="creator">
             Creator <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            value={user.displayName}
-            disabled
-          />
+          <input type="text" value={user.displayName} disabled />
         </div>
 
-        {errors.submit && (
-          <div className="text-red-500">{errors.submit}</div>
-        )}
+        {errors.submit && <div className="text-red-500">{errors.submit}</div>}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-        >
+        <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Creating Community..." : "Engender Community"}
         </button>
+        {isEdit && (
+          <button type="button" onClick={handleDelete}>
+            Delete
+          </button>
+        )}
       </form>
     </div>
   );

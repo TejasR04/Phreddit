@@ -28,13 +28,41 @@ export const api = {
   },
 
   getUserPosts: async (displayName) => {
-    const response = await axios.get(`${API_BASE_URL}/creator/${displayName}/posts`);
+    const response = await axios.get(
+      `${API_BASE_URL}/creator/${displayName}/posts`
+    );
     return response.data;
   },
 
   getUserComments: async (displayName) => {
     const response = await axios.get(
       `${API_BASE_URL}/creator/${displayName}/comments`
+    );
+    return response.data;
+  },
+
+  updateCommunity: async (communityId, communityData) => {
+    const response = await axios.patch(
+      `${API_BASE_URL}/communities/${communityId}`,
+      communityData
+    );
+    return response.data;
+  },
+
+  // Update a post
+  updatePost: async (postId, postData) => {
+    const response = await axios.patch(
+      `${API_BASE_URL}/posts/${postId}`,
+      postData
+    );
+    return response.data;
+  },
+
+  // Update a comment
+  updateComment: async (commentId, commentData) => {
+    const response = await axios.patch(
+      `${API_BASE_URL}/comments/${commentId}`,
+      commentData
     );
     return response.data;
   },
@@ -105,7 +133,6 @@ export const api = {
     );
     return response.data;
   },
-  
 
   getAllLinkFlairs: async () => {
     const response = await axios.get(`${API_BASE_URL}/linkFlairs`);
@@ -150,29 +177,40 @@ export const api = {
     return response.data;
   },
   upvotePost: async (postId, displayName) => {
-    const response = await axios.patch(`${API_BASE_URL}/posts/${postId}/upvote`, { displayName });
+    const response = await axios.patch(
+      `${API_BASE_URL}/posts/${postId}/upvote`,
+      { displayName }
+    );
     return response.data;
   },
-  
+
   downvotePost: async (postId, displayName) => {
-    const response = await axios.patch(`${API_BASE_URL}/posts/${postId}/downvote`, { displayName });
+    const response = await axios.patch(
+      `${API_BASE_URL}/posts/${postId}/downvote`,
+      { displayName }
+    );
     return response.data;
   },
-  
+
   upvoteComment: async (commentId, displayName) => {
-    const response = await axios.patch(`${API_BASE_URL}/comments/${commentId}/upvote`, { displayName });
+    const response = await axios.patch(
+      `${API_BASE_URL}/comments/${commentId}/upvote`,
+      { displayName }
+    );
     return response.data;
   },
-  
+
   downvoteComment: async (commentId, displayName) => {
-    console.log("API: Downvote comment with ID:", commentId, "by user:", displayName); // Debugging
+    console.log(
+      "API: Downvote comment with ID:",
+      commentId,
+      "by user:",
+      displayName
+    ); // Debugging
     const response = await axios.patch(
       `${API_BASE_URL}/comments/${commentId}/downvote`,
       { displayName }
     );
     return response.data;
-  }
-  
-  
-  
+  },
 };

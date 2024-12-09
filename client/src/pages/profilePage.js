@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
 
-const ProfilePage = () => {
+const ProfilePage = ({ setCurrentView, setIsEdit, setEditData }) => {
   const { user } = useUser();
   const [profile, setProfile] = useState(null);
   const [communities, setCommunities] = useState([]);
@@ -55,12 +55,17 @@ const ProfilePage = () => {
             {communities.length > 0 ? (
               communities.map((community) => (
                 <div key={community._id}>
-                  <a href={`/community/${community._id}/edit`}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsEdit(true);
+                      setEditData(community);
+                      setCurrentView("newCommunity");
+                    }}
+                  >
                     {community.name}
                   </a>
-                  <button onClick={() => handleDeleteCommunity(community._id)}>
-                    Delete
-                  </button>
                 </div>
               ))
             ) : (
@@ -74,10 +79,17 @@ const ProfilePage = () => {
             {posts.length > 0 ? (
               posts.map((post) => (
                 <div key={post._id}>
-                  <a href={`/post/${post._id}/edit`}>{post.title}</a>
-                  <button onClick={() => handleDeletePost(post._id)}>
-                    Delete
-                  </button>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsEdit(true);
+                      setEditData(post);
+                      setCurrentView("newPost");
+                    }}
+                  >
+                    {post.title}
+                  </a>
                 </div>
               ))
             ) : (
@@ -91,12 +103,17 @@ const ProfilePage = () => {
             {comments.length > 0 ? (
               comments.map((comment) => (
                 <div key={comment._id}>
-                  <a href={`/comment/${comment._id}/edit`}>
-                    {comment.postTitle}: {comment.content.substring(0, 20)}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsEdit(true);
+                      setEditData(comment);
+                      setCurrentView("newComment");
+                    }}
+                  >
+                    {comment.postTitle}: {comment.content.length > 20 ? comment.content.substring(0, 20) + "..." : comment.content}
                   </a>
-                  <button onClick={() => handleDeleteComment(comment._id)}>
-                    Delete
-                  </button>
                 </div>
               ))
             ) : (
@@ -106,41 +123,6 @@ const ProfilePage = () => {
         );
       default:
         return null;
-    }
-  };
-
-  const handleDeleteCommunity = async (communityId) => {
-    if (window.confirm("Are you sure you want to delete this community?")) {
-      try {
-        await api.deleteCommunity(communityId);
-        setCommunities(
-          communities.filter((community) => community._id !== communityId)
-        );
-      } catch (err) {
-        setError("Failed to delete community. Please try again.");
-      }
-    }
-  };
-
-  const handleDeletePost = async (postId) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await api.deletePost(postId);
-        setPosts(posts.filter((post) => post._id !== postId));
-      } catch (err) {
-        setError("Failed to delete post. Please try again.");
-      }
-    }
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    if (window.confirm("Are you sure you want to delete this comment?")) {
-      try {
-        await api.deleteComment(commentId);
-        setComments(comments.filter((comment) => comment._id !== commentId));
-      } catch (err) {
-        setError("Failed to delete comment. Please try again.");
-      }
     }
   };
 

@@ -56,40 +56,84 @@ app.post("/register", async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
-  });
+});
   
-  app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      const isMatch = await bcrypt.compare(password, user.password);
-      console.log('Entered email:', user.email);
-      console.log('Entered password:', password);
-      console.log('Hashed password from DB:', user.password);
-      console.log('Passwords match:', isMatch);
-  
-      if (!isMatch) {
-        return res.status(400).json({ message: "Invalid password" });
-      }
-  
-      const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password; 
-  
-      res.status(200).json({
-        message: "Login successful",
-        user: userWithoutPassword, 
-      });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  });
-  
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Entered email:', user.email);
+    console.log('Entered password:', password);
+    console.log('Hashed password from DB:', user.password);
+    console.log('Passwords match:', isMatch);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password; 
+
+    res.status(200).json({
+      message: "Login successful",
+      user: userWithoutPassword, 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+ 
+app.patch("/communities/:communityId", async (req, res) => {
+  try {
+    const community = await Community.findByIdAndUpdate(
+      req.params.communityId,
+      req.body,
+      { new: true }
+    );
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+    res.json(community);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.patch("/posts/:postId", async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(req.params.postId, req.body, {
+      new: true,
+    });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+app.patch("/comments/:commentId", async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndUpdate(
+      req.params.commentId,
+      req.body,
+      { new: true }
+    );
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    res.json(comment);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 app.post("/communities", async (req, res) => {
   const community = new Community({

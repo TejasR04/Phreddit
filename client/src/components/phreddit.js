@@ -17,6 +17,8 @@ import { set } from "mongoose";
 const Phreddit = () => {
   const [postID, setPostID] = useState(null);
   const [currentView, setCurrentView] = useState("welcome");
+  const [isEdit, setIsEdit] = useState(false);
+  const [editData, setEditData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -68,6 +70,8 @@ const Phreddit = () => {
   };
 
   const handleCreatePost = () => {
+    setIsEdit(false);
+    setEditData(null);
     setCurrentView("newPost");
   };
   
@@ -84,6 +88,8 @@ const Phreddit = () => {
   };
 
   const handleCreateCommunity = () => {
+    setIsEdit(false);
+    setEditData(null);
     setCurrentView("newCommunity");
   };
 
@@ -103,6 +109,8 @@ const Phreddit = () => {
   };
 
   const handleReplyClick = (commentID) => {
+    setIsEdit(false);
+    setEditData(null);
     setParentCommentID(commentID);
     setCurrentView("newComment");
   };
@@ -148,10 +156,19 @@ const Phreddit = () => {
             api={api}
             setCurrentView={setCurrentView}
             setSelectedCommunity={setSelectedCommunity}
+            isEdit={isEdit}
+            editData={editData}
           />
         );
       case "newPost":
-        return <NewPostPage api={api} setCurrentView={setCurrentView} />;
+        return (
+          <NewPostPage 
+            api={api} 
+            setCurrentView={setCurrentView}
+            isEdit={isEdit}
+            editData={editData}
+          />
+        );
       case "post":
         return (
           <PostPage
@@ -164,6 +181,9 @@ const Phreddit = () => {
       case "profile":
         return (
           <ProfilePage
+            setCurrentView={setCurrentView}
+            setIsEdit={setIsEdit}
+            setEditData={setEditData}
           />
         );
       case "newComment":
@@ -173,6 +193,8 @@ const Phreddit = () => {
             setCurrentView={setCurrentView}
             postID={selectedPost}
             parentCommentID={parentCommentID}
+            isEdit={isEdit}
+            editData={editData}
           />
         );
       case "search":
