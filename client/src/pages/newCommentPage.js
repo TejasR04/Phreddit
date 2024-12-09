@@ -51,7 +51,7 @@ const NewCommentPage = ({ setCurrentView, postID, parentCommentID }) => {
       setLoading(true);
       setSubmissionError("");
 
-      await api.createComment(postID, commentData); 
+      await api.createComment(postID, commentData, user.displayName); 
 
       // Clear input fields and navigate back
       setCommentContent("");
