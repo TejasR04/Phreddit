@@ -227,7 +227,7 @@ const CommunityPage = ({ communityName, onPostClick }) => {
                   : post.content}
               </div>
               <div className="post-stats">
-                {post.views} views | {totalComments} comments
+                {post.upvotes} upvotes | {post.views} views | {totalComments} comments
               </div>
             </div>
           );
