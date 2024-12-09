@@ -15,9 +15,45 @@ export const api = {
     return response.data;
   },
 
-  getUserCommunities: async (userId) => {
+  getUserProfile: async (userId) => {
+    const response = await axios.get(`${API_BASE_URL}/users/${userId}/profile`);
+    return response.data;
+  },
+
+  getUserCommunities: async (displayName) => {
     const response = await axios.get(
-      `${API_BASE_URL}/users/${userId}/communities`
+      `${API_BASE_URL}/creator/${displayName}/communities`
+    );
+    return response.data;
+  },
+
+  getUserPosts: async (displayName) => {
+    const response = await axios.get(`${API_BASE_URL}/creator/${displayName}/posts`);
+    return response.data;
+  },
+
+  getUserComments: async (displayName) => {
+    const response = await axios.get(
+      `${API_BASE_URL}/creator/${displayName}/comments`
+    );
+    return response.data;
+  },
+
+  deleteCommunity: async (communityId) => {
+    const response = await axios.delete(
+      `${API_BASE_URL}/communities/${communityId}`
+    );
+    return response.data;
+  },
+
+  deletePost: async (postId) => {
+    const response = await axios.delete(`${API_BASE_URL}/posts/${postId}`);
+    return response.data;
+  },
+
+  deleteComment: async (commentId) => {
+    const response = await axios.delete(
+      `${API_BASE_URL}/comments/${commentId}`
     );
     return response.data;
   },
@@ -100,11 +136,17 @@ export const api = {
   },
 
   joinCommunity: async (communityId, displayName) => {
-    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/join`, { displayName });
+    const response = await axios.post(
+      `${API_BASE_URL}/communities/${communityId}/join`,
+      { displayName }
+    );
     return response.data;
   },
   leaveCommunity: async (communityId, displayName) => {
-    const response = await axios.post(`${API_BASE_URL}/communities/${communityId}/leave`, { displayName });
+    const response = await axios.post(
+      `${API_BASE_URL}/communities/${communityId}/leave`,
+      { displayName }
+    );
     return response.data;
   },
   upvotePost: async (postId, displayName) => {

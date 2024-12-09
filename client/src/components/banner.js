@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '../utils/userContext';
-const Banner = ({ onSearch, onCreatePost, onWelcomeClick }) => {
+const Banner = ({ onSearch, onCreatePost, onWelcomeClick, onProfileClick }) => {
   const { user, logoutUser } = useUser(); // Get the current user and the logout function
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -14,6 +14,11 @@ const Banner = ({ onSearch, onCreatePost, onWelcomeClick }) => {
     // Disable create post if user is a guest
     if (!user) return;
     onCreatePost();
+  };
+  
+  const handleProfileClick = () => {
+    if (!user) return;
+    onProfileClick();
   };
 
   const handleLogout = () => {
@@ -46,7 +51,8 @@ const Banner = ({ onSearch, onCreatePost, onWelcomeClick }) => {
       </button>
 
       {/* Profile button */}
-      <button className="profile-btn">
+      <button className="profile-btn"
+        onClick={handleProfileClick}>
         {user ? user.displayName : 'Guest'}
       </button>
 

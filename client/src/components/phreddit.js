@@ -9,6 +9,7 @@ import NewPostPage from "../pages/newPostPage";
 import PostPage from "../pages/postPage";
 import SearchResultsPage from "../pages/searchResultsPage";
 import WelcomePage from "../pages/welcomePage.js";
+import ProfilePage from "../pages/profilePage";
 import { api } from "../services/api";
 import { useUser } from "../utils/userContext";
 import { set } from "mongoose";
@@ -68,6 +69,10 @@ const Phreddit = () => {
 
   const handleCreatePost = () => {
     setCurrentView("newPost");
+  };
+  
+  const handleProfileClick = () => {
+    setCurrentView("profile");
   };
 
   const handleHomeClick = () => {
@@ -156,6 +161,11 @@ const Phreddit = () => {
             handleReplyClick={handleReplyClick}
           />
         );
+      case "profile":
+        return (
+          <ProfilePage
+          />
+        );
       case "newComment":
         return (
           <NewCommentPage
@@ -193,6 +203,7 @@ const Phreddit = () => {
         onSearch={handleSearch}
         onCreatePost={handleCreatePost}
         onWelcomeClick={handleWelcomeClick}
+        onProfileClick={handleProfileClick}
       />
       {currentView != "welcome" && (
       <NavBar

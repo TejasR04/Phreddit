@@ -178,6 +178,128 @@ app.get("/posts/:id", async (req, res) => {
   }
 });
 
+app.get("/users/:userId/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/creator/:displayName/communities", async (req, res) => {
+  try {
+    const communities = await Community.find({ creator: req.params.displayName });
+    res.json(communities);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/creator/:displayName/posts", async (req, res) => {
+  try {
+    const posts = await Post.find({ postedBy: req.params.displayName });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/creator/:displayName/comments", async (req, res) => {
+  try {
+    const displayName = req.params.displayName;
+    const comments = await Comment.find({ commentedBy: displayName });
+    const posts = await Post.find();
+
+    const commentsWithPosts = await Promise.all(
+      comments.map(async (comment) => {
+        const post = posts.find(
+          (post) => post.commentIDs && post.commentIDs.includes(comment._id)
+        );
+
+        return {
+          ...comment.toObject(),
+          postTitle: post ? post.title : "Unknown Post",
+        };
+      })
+    );
+
+    res.json(commentsWithPosts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete("/communities/:communityId", async (req, res) => {
+  try {
+    const communityId = req.params.communityId;
+
+    const community = await Community.findById(communityId);
+    if (!community) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    for (const postId of community.postIDs) {
+      await Comment.deleteMany({ post: postId });
+    }
+
+    await Post.deleteMany({ _id: { $in: community.postIDs } });
+
+    await Community.findByIdAndDelete(communityId);
+
+    res
+      .status(200)
+      .json({
+        message: "Community and all associated content deleted successfully",
+      });
+  } catch (err) {
+    console.error("Error deleting community:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+const deleteCommentsRecursively = async (commentIds) => {
+  if (!commentIds || commentIds.length === 0) return;
+
+  for (const commentId of commentIds) {
+    const comment = await Comment.findById(commentId);
+    if (comment) {
+      if (comment.commentIDs && comment.commentIDs.length > 0) {
+        await deleteCommentsRecursively(comment.commentIDs);
+      }
+      await Comment.findByIdAndDelete(commentId);
+    }
+  }
+};
+
+app.delete("/posts/:postId", async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId);
+    
+    if (post && post.commentIDs) {
+      await deleteCommentsRecursively(post.commentIDs);
+    }
+    
+    await Post.findByIdAndDelete(postId);
+    res.status(200).json({ message: "Post and all comments deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete("/comments/:commentId", async (req, res) => {
+  try {
+    const commentId = req.params.commentId;
+    await Comment.findByIdAndDelete(commentId);
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 app.patch("/posts/:id/views", async (req, res) => {
   try {
