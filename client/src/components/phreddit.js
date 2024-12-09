@@ -24,7 +24,21 @@ const Phreddit = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useUser();
+  // State to track membership status
+  const [isMember, setIsMember] = useState(false);
 
+  // Function to handle membership change
+  const handleMembershipChange = (status) => {
+    setIsMember(status);
+  };
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      // If the user is logged in, set the view to "home"
+      setCurrentView("home");
+    }
+  }, []);
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
@@ -194,12 +208,13 @@ const Phreddit = () => {
         onCreatePost={handleCreatePost}
         onWelcomeClick={handleWelcomeClick}
       />
-      {currentView != "welcome" && (
+      {currentView !== "welcome" && (
       <NavBar
         communities={communities}
         onCommunityClick={handleCommunityClick}
         onHomeClick={handleHomeClick}
         onCreateCommunity={handleCreateCommunity}
+        setCurrentView={setCurrentView}
       />
       )}
       <main>{renderView()}</main>
