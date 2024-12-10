@@ -86,6 +86,11 @@ app.delete("/users/:userId", async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.status(200).send('Hello World');
+});
+
+
 app.post("/register", async (req, res) => {
     const { firstName, lastName, email, displayName, password, passwordVerification } = req.body;
   
@@ -805,3 +810,5 @@ process.on("SIGINT", async () => {
   console.log("Server closed. Database instance disconnected");
   process.exit(0);
 });
+
+module.exports = app;
