@@ -310,6 +310,20 @@ app.get("/creator/:displayName/posts", async (req, res) => {
   }
 });
 
+const isCommentInTree = async (commentId, parentComment) => {
+  if (parentComment.commentIDs.includes(commentId)) {
+    return true;
+  }
+
+  for (const childCommentId of parentComment.commentIDs) {
+    const childComment = await Comment.findById(childCommentId);
+    if (childComment && (await isCommentInTree(commentId, childComment))) {
+      return true;
+    }
+  }
+  return false;
+};
+
 app.get("/creator/:displayName/comments", async (req, res) => {
   try {
     const displayName = req.params.displayName;
@@ -318,10 +332,22 @@ app.get("/creator/:displayName/comments", async (req, res) => {
 
     const commentsWithPosts = await Promise.all(
       comments.map(async (comment) => {
-        const post = posts.find(
+        let post = posts.find(
           (post) => post.commentIDs && post.commentIDs.includes(comment._id)
         );
 
+        if (!post) {
+          for (const postItem of posts) {
+            for (const topLevelCommentId of postItem.commentIDs) {
+              const topLevelComment = await Comment.findById(topLevelCommentId);
+              if (topLevelComment && await isCommentInTree(comment._id, topLevelComment)) {
+                post = postItem;
+                break;
+              }
+            }
+            if (post) break; 
+          }
+        }
         return {
           ...comment.toObject(),
           postTitle: post ? post.title : "Unknown Post",
