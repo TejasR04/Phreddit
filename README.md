@@ -4,6 +4,10 @@
 ## Project Overview
 Phreddit is a full-stack web application clone of Reddit, developed by Tejas Ravi and Tanjim Ahammad. The application allows users to create accounts, join communities, create posts, comment, and interact with content.
 
+Here's a GIF that demos some of the application's features: 
+
+<img src='https://i.imgur.com/HEJPwRy.gif' title='Video Demo' width='' alt='Video Demo' />
+
 ## Technology Stack
 - **Frontend:** React
 - **Backend:** Node.js with Express
