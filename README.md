@@ -6,7 +6,8 @@ Phreddit is a full-stack web application clone of Reddit, developed by Tejas Rav
 
 Here's a GIF that demos some of the application's features: 
 
-<img src='https://i.imgur.com/HEJPwRy.gif' title='Video Demo' width='' alt='Video Demo' />
+![Video Demo](https://i.imgur.com/HEJPwRy.gif)
+
 
 ## Technology Stack
 - **Frontend:** React
